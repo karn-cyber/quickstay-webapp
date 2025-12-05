@@ -91,14 +91,17 @@ export const getHotelById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
-        // Try to find in database first
-        let hotel = await Hotel.findById(id);
-
-        // If not found in DB, try to get from mock data
-        if (!hotel) {
-            const hotels = await searchAmadeusHotels('ALL');
-            hotel = hotels.find((h: any) => h.id === id);
+        // Try to find in database first (only if it looks like a MongoDB ObjectId)
+        if (id.match(/^[0-9a-fA-F]{24}$/)) {
+            const hotel = await Hotel.findById(id);
+            if (hotel) {
+                return res.json(hotel);
+            }
         }
+
+        // If not found in DB or not a valid ObjectId, try to get from mock data
+        const hotels = await searchAmadeusHotels('ALL');
+        const hotel = hotels.find((h: any) => h.id === id);
 
         if (!hotel) {
             return res.status(404).json({ message: 'Hotel not found' });

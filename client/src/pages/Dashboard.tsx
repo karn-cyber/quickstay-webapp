@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { Calendar, MapPin, User, CreditCard, Package, ChevronDown, ChevronUp } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
-import { Calendar, MapPin, Clock, Loader2 } from 'lucide-react';
 import api from '../lib/api';
 
 interface Booking {
     _id: string;
-    room: {
-        name: string;
-        images: string[];
-    };
+    hotelName: string;
+    hotelImage?: string;
     checkInDate: string;
     checkOutDate: string;
     status: string;
     totalPrice: number;
 }
 
-import { useAuth } from '../context/AuthContext';
-
 const Dashboard: React.FC = () => {
-    const { user } = useAuth();
     const [bookings, setBookings] = useState<Booking[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [expandedBooking, setExpandedBooking] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -28,101 +23,207 @@ const Dashboard: React.FC = () => {
                 const response = await api.get('/bookings/my-bookings');
                 setBookings(response.data);
             } catch (error) {
-                console.error('Error fetching bookings:', error);
-            } finally {
-                setLoading(false);
+                console.error('Failed to fetch bookings', error);
             }
         };
 
         fetchBookings();
     }, []);
 
-    if (loading) {
-        return (
-            <MainLayout>
-                <div className="flex justify-center items-center h-screen">
-                    <Loader2 className="animate-spin text-blue-600" size={48} />
-                </div>
-            </MainLayout>
-        );
-    }
+    const toggleBookingDetails = (bookingId: string) => {
+        setExpandedBooking(expandedBooking === bookingId ? null : bookingId);
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
+    };
+
+    const calculateNights = (checkIn: string, checkOut: string) => {
+        const nights = Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24));
+        return nights;
+    };
 
     return (
         <MainLayout>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                {/* Profile Section */}
-                <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-8">
-                    <div className="relative">
-                        {user?.picture ? (
-                            <img
-                                src={user.picture}
-                                alt={user.name}
-                                className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-                            />
-                        ) : (
-                            <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
-                                <span className="text-4xl font-bold text-gray-400">{user?.name?.charAt(0).toUpperCase()}</span>
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">My Dashboard</h1>
+                    <p className="text-gray-600">Manage your bookings and account</p>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-blue-100 text-sm font-medium">Total Bookings</p>
+                                <p className="text-3xl font-bold mt-1">{bookings.length}</p>
                             </div>
-                        )}
+                            <Package size={40} className="opacity-80" />
+                        </div>
                     </div>
-                    <div className="text-center md:text-left">
-                        <h1 className="text-3xl font-bold text-gray-900">{user?.name}</h1>
-                        <p className="text-gray-500 mt-1">{user?.email}</p>
-                        <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-                                {user?.role === 'admin' ? 'Administrator' : 'Member'}
-                            </span>
+                    <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-green-100 text-sm font-medium">Confirmed</p>
+                                <p className="text-3xl font-bold mt-1">{bookings.filter(b => b.status === 'confirmed').length}</p>
+                            </div>
+                            <Calendar size={40} className="opacity-80" />
+                        </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-purple-100 text-sm font-medium">Total Spent</p>
+                                <p className="text-3xl font-bold mt-1">₹{bookings.reduce((sum, b) => sum + b.totalPrice, 0).toLocaleString()}</p>
+                            </div>
+                            <CreditCard size={40} className="opacity-80" />
                         </div>
                     </div>
                 </div>
 
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">My Bookings</h2>
-
-                <div className="space-y-6">
-                    {bookings.map((booking) => (
-                        <div key={booking._id} className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col md:flex-row">
-                            <div className="md:w-1/3 lg:w-1/4 h-48 md:h-auto relative">
-                                <img
-                                    src={booking.room.images[0] || 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
-                                    alt={booking.room.name}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="p-6 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <h3 className="text-xl font-bold text-gray-900">{booking.room.name}</h3>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                            {booking.status}
-                                        </span>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600 mb-4">
-                                        <div className="flex items-center space-x-2">
-                                            <Calendar size={18} className="text-blue-600" />
-                                            <span>{new Date(booking.checkInDate).toLocaleDateString()} - {new Date(booking.checkOutDate).toLocaleDateString()}</span>
-                                        </div>                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <MapPin size={18} className="text-blue-600" />
-                                        <span>Santa Monica, CA</span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <Clock size={18} className="text-blue-600" />
-                                        <span>Check-in: 3:00 PM</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                                <span className="text-gray-500 text-sm">Booking ID: #{booking._id.slice(-6)}</span>
-                                <span className="text-xl font-bold text-gray-900">₹{booking.totalPrice}</span>
-                            </div>
+                {/* Bookings Section */}
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">My Bookings</h2>
+                    {bookings.length === 0 ? (
+                        <div className="bg-white rounded-2xl shadow-md p-12 text-center">
+                            <Package size={64} className="mx-auto text-gray-300 mb-4" />
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No bookings yet</h3>
+                            <p className="text-gray-600 mb-6">Start exploring amazing hotels and make your first booking!</p>
+                            <a href="/explore" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors">
+                                Explore Hotels
+                            </a>
                         </div>
-                    ))}
+                    ) : (
+                        <div className="space-y-6">
+                            {bookings.map((booking) => {
+                                const nights = calculateNights(booking.checkInDate, booking.checkOutDate);
+                                const pricePerNight = Math.round(booking.totalPrice / nights);
+                                const isExpanded = expandedBooking === booking._id;
+
+                                return (
+                                    <div key={booking._id} className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+                                        <div className="flex flex-col md:flex-row">
+                                            {/* Hotel Image */}
+                                            <div className="md:w-1/3 lg:w-1/4 h-56 md:h-auto relative overflow-hidden">
+                                                <img
+                                                    src={booking.hotelImage || 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
+                                                    alt={booking.hotelName}
+                                                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                                                />
+                                                <div className="absolute top-4 right-4">
+                                                    <span className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide shadow-lg ${booking.status === 'confirmed'
+                                                            ? 'bg-green-500 text-white'
+                                                            : 'bg-yellow-500 text-white'
+                                                        }`}>
+                                                        {booking.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Booking Details */}
+                                            <div className="flex-1 p-6">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h3 className="text-2xl font-bold text-gray-900 mb-1">{booking.hotelName}</h3>
+                                                        <p className="text-sm text-gray-500">Booking ID: #{booking._id.slice(-8).toUpperCase()}</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Quick Info */}
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                                    <div className="flex items-center text-gray-600">
+                                                        <Calendar size={18} className="mr-2 text-blue-600" />
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Check-in</p>
+                                                            <p className="font-semibold text-sm">{formatDate(booking.checkInDate)}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center text-gray-600">
+                                                        <Calendar size={18} className="mr-2 text-blue-600" />
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Check-out</p>
+                                                            <p className="font-semibold text-sm">{formatDate(booking.checkOutDate)}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center text-gray-600">
+                                                        <User size={18} className="mr-2 text-blue-600" />
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Nights</p>
+                                                            <p className="font-semibold text-sm">{nights} {nights === 1 ? 'Night' : 'Nights'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center text-gray-600">
+                                                        <CreditCard size={18} className="mr-2 text-green-600" />
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Total</p>
+                                                            <p className="font-semibold text-lg text-blue-600">₹{booking.totalPrice.toLocaleString()}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Expandable Details */}
+                                                {isExpanded && (
+                                                    <div className="mt-6 pt-6 border-t border-gray-200 animate-fadeIn">
+                                                        <h4 className="font-semibold text-gray-900 mb-4">Booking Breakdown</h4>
+                                                        <div className="space-y-3 bg-gray-50 rounded-xl p-4">
+                                                            <div className="flex justify-between text-sm">
+                                                                <span className="text-gray-600">Room Rate ({nights} {nights === 1 ? 'night' : 'nights'})</span>
+                                                                <span className="font-semibold">₹{pricePerNight.toLocaleString()} × {nights}</span>
+                                                            </div>
+                                                            <div className="flex justify-between text-sm">
+                                                                <span className="text-gray-600">Subtotal</span>
+                                                                <span className="font-semibold">₹{(pricePerNight * nights).toLocaleString()}</span>
+                                                            </div>
+                                                            <div className="border-t border-gray-300 pt-3 flex justify-between font-bold text-lg">
+                                                                <span>Total Amount</span>
+                                                                <span className="text-blue-600">₹{booking.totalPrice.toLocaleString()}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                                                            <p className="text-sm text-blue-800">
+                                                                <strong>✓ Payment Confirmed</strong>
+                                                            </p>
+                                                            <p className="text-xs text-blue-600 mt-1">
+                                                                Your booking is confirmed. Check your email for confirmation details.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Toggle Button */}
+                                                <button
+                                                    onClick={() => toggleBookingDetails(booking._id)}
+                                                    className="mt-4 flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+                                                >
+                                                    {isExpanded ? (
+                                                        <>
+                                                            <ChevronUp size={18} className="mr-1" />
+                                                            Hide Details
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <ChevronDown size={18} className="mr-1" />
+                                                            View Details
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
-        </MainLayout >
+        </MainLayout>
     );
 };
 

@@ -8,6 +8,8 @@ import Register from './pages/Register';
 import Checkout from './pages/Checkout';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminHotelManagement from './pages/AdminHotelManagement';
+import AdminHotelCreate from './pages/AdminHotelCreate';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import { AuthProvider } from './context/AuthContext';
@@ -26,6 +28,8 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/hotels" element={<AdminHotelManagement />} />
+          <Route path="/admin/hotels/create" element={<AdminHotelCreate />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<ContactUs />} />
         </Routes>
