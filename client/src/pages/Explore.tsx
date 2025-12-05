@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Loader2, Map as MapIcon, List } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+
 import MainLayout from '../layouts/MainLayout';
 import Button from '../components/ui/Button';
 import { Link } from 'react-router-dom';
@@ -22,40 +22,11 @@ interface Hotel {
     amenities: string[];
 }
 
-const mapContainerStyle = {
-    width: '100%',
-    height: '100%',
-    borderRadius: '1rem',
-};
-
-const center = {
-    lat: 20.5937,
-    lng: 78.9629,
-};
-
 const Explore: React.FC = () => {
     const [hotels, setHotels] = useState<Hotel[]>([]);
     const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-    const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
-
-    const [mapCenter, setMapCenter] = useState(center);
 
     useEffect(() => {
-        // Fetch user's location
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setMapCenter({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                    });
-                },
-                (error) => {
-                    console.error("Error getting location:", error);
-                }
-            );
-        }
 
         const fetchHotels = async () => {
             try {

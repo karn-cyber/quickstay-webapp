@@ -8,6 +8,8 @@ import Register from './pages/Register';
 import Checkout from './pages/Checkout';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/ContactUs';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -24,6 +26,8 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
         </Routes>
       </Router>
     </AuthProvider>

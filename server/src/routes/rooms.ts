@@ -1,13 +1,16 @@
 import express from 'express';
-import { getRooms, getRoom, createRoom, updateRoom, deleteRoom } from '../controllers/rooms';
-import { authMiddleware, adminMiddleware } from '../middleware/auth';
+import { getAllRooms, getRoomById, createRoom, updateRoom, deleteRoom } from '../controllers/rooms';
+import { authMiddleware, isAdmin } from '../middleware/auth';
 
 const router = express.Router();
 
-router.get('/', getRooms);
-router.get('/:id', getRoom);
-router.post('/', authMiddleware, adminMiddleware, createRoom);
-router.put('/:id', authMiddleware, adminMiddleware, updateRoom);
-router.delete('/:id', authMiddleware, adminMiddleware, deleteRoom);
+// Public routes
+router.get('/', getAllRooms); // Get all rooms with pagination/filtering
+router.get('/:id', getRoomById); // Get specific room
+
+// Admin routes
+router.post('/', authMiddleware, isAdmin, createRoom);
+router.put('/:id', authMiddleware, isAdmin, updateRoom);
+router.delete('/:id', authMiddleware, isAdmin, deleteRoom);
 
 export default router;

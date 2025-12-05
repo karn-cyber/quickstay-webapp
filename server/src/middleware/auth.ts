@@ -31,3 +31,6 @@ export const adminMiddleware = (req: AuthRequest, res: Response, next: NextFunct
     }
     next();
 };
+
+// Alias for consistency
+export const isAdmin = adminMiddleware;

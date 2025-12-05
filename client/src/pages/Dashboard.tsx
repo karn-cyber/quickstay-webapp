@@ -116,7 +116,7 @@ const Dashboard: React.FC = () => {
 
                             <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                                 <span className="text-gray-500 text-sm">Booking ID: #{booking._id.slice(-6)}</span>
-                                <span className="text-xl font-bold text-gray-900">${booking.totalPrice}</span>
+                                <span className="text-xl font-bold text-gray-900">₹{booking.totalPrice}</span>
                             </div>
                         </div>
                     ))}

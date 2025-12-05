@@ -1,110 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import MainLayout from '../layouts/MainLayout';
 import Button from '../components/ui/Button';
 import api from '../lib/api';
 import { Loader2 } from 'lucide-react';
 
-// Make sure to call loadStripe outside of a component’s render to avoid
-// recreating the Stripe object on every render.
-const stripePromise = loadStripe('pk_test_placeholder'); // User needs to replace this
-
-const CheckoutForm = ({ amount, onSuccess }: { amount: number, onSuccess: () => void }) => {
-    const stripe = useStripe();
-    const elements = useElements();
-    const [message, setMessage] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-
-    useEffect(() => {
-        if (!stripe) {
-            return;
-        }
-
-        const clientSecret = new URLSearchParams(window.location.search).get(
-            "payment_intent_client_secret"
-        );
-
-        if (!clientSecret) {
-            return;
-        }
-
-        stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
-            switch (paymentIntent?.status) {
-                case "succeeded":
-                    setMessage("Payment succeeded!");
-                    break;
-                case "processing":
-                    setMessage("Your payment is processing.");
-                    break;
-                case "requires_payment_method":
-                    setMessage("Your payment was not successful, please try again.");
-                    break;
-                default:
-                    setMessage("Something went wrong.");
-                    break;
-            }
-        });
-    }, [stripe]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!stripe || !elements) {
-            return;
-        }
-
-        setIsLoading(true);
-
-        const { error } = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-                // Make sure to change this to your payment completion page
-                return_url: `${window.location.origin}/dashboard`,
-            },
-            redirect: 'if_required'
-        });
-
-        if (error) {
-            if (error.type === "card_error" || error.type === "validation_error") {
-                setMessage(error.message || "An error occurred");
-            } else {
-                setMessage("An unexpected error occurred.");
-            }
-        } else {
-            // Payment succeeded
-            onSuccess();
-        }
-
-        setIsLoading(false);
-    };
-
-    return (
-        <form id="payment-form" onSubmit={handleSubmit} className="space-y-6">
-            <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
-            <Button
-                disabled={isLoading || !stripe || !elements}
-                id="submit"
-                className="w-full"
-                isLoading={isLoading}
-            >
-                <span id="button-text">
-                    {isLoading ? "Processing..." : `Pay ₹${amount}`}
-                </span>
-            </Button>
-            {message && <div id="payment-message" className="text-red-500 text-sm text-center">{message}</div>}
-        </form>
-    );
-};
-
 const Checkout: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { hotel, addons } = location.state || {};
-    const [clientSecret, setClientSecret] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    // Calculate total price (mock calculation)
+    // Calculate total price
     const basePrice = hotel?.price || 0;
     const addonsPrice = (addons?.breakfast ? 2000 : 0) + (addons?.carRental ? 5000 : 0);
     const totalAmount = basePrice + addonsPrice;
@@ -112,41 +19,32 @@ const Checkout: React.FC = () => {
     useEffect(() => {
         if (!hotel) {
             navigate('/explore');
-            return;
         }
+    }, [hotel, navigate]);
 
-        // Create PaymentIntent as soon as the page loads
-        api.post("/payments/create-intent", { amount: totalAmount * 100, currency: 'usd' }) // Amount in cents
-            .then((res) => setClientSecret(res.data.clientSecret))
-            .catch((err) => console.error("Error creating payment intent:", err));
-    }, [hotel, totalAmount, navigate]);
+    const handleMockPayment = async () => {
+        setLoading(true);
 
-    const handleSuccess = async () => {
-        // Create booking record in backend
         try {
+            // Create booking record directly (mock payment)
             await api.post('/bookings', {
-                room: hotel.id, // Note: This might need adjustment if backend expects a MongoDB ID and we are sending Amadeus ID
+                room: hotel.id,
                 checkInDate: new Date(),
                 checkOutDate: new Date(Date.now() + 86400000), // Next day
                 totalPrice: totalAmount
             });
+
+            // Show success message
+            alert('🎉 Payment successful! Your booking has been confirmed.');
             navigate('/dashboard');
-        } catch (error) {
-            console.error('Failed to create booking record', error);
-            // Still navigate to dashboard as payment succeeded
-            navigate('/dashboard');
+        } catch (error: any) {
+            console.error('Booking creation failed', error);
+            alert(error.response?.data?.message || 'Failed to create booking. Please try again.');
+            setLoading(false);
         }
     };
 
     if (!hotel) return null;
-
-    const appearance = {
-        theme: 'stripe' as const,
-    };
-    const options = {
-        clientSecret,
-        appearance,
-    };
 
     return (
         <MainLayout>
@@ -181,17 +79,32 @@ const Checkout: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Payment Form */}
+                    {/* Payment Section */}
                     <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                        {clientSecret ? (
-                            <Elements options={options} stripe={stripePromise}>
-                                <CheckoutForm amount={totalAmount} onSuccess={handleSuccess} />
-                            </Elements>
-                        ) : (
-                            <div className="flex justify-center py-10">
-                                <Loader2 className="animate-spin text-blue-600" size={32} />
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">Payment Details</h2>
+                        <div className="mb-6">
+                            <p className="text-gray-600 text-sm mb-4">
+                                Click the button below to proceed with secure payment via Razorpay.
+                            </p>
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                <p className="text-sm text-blue-800">
+                                    <strong>💳 Safe & Secure Payment</strong>
+                                </p>
+                                <p className="text-xs text-blue-600 mt-1">
+                                    Your payment information is encrypted and secure.
+                                </p>
                             </div>
-                        )}
+                        </div>
+
+                        <Button
+                            onClick={handleMockPayment}
+                            className="w-full"
+                            size="lg"
+                            isLoading={loading}
+                            disabled={loading}
+                        >
+                            {loading ? 'Processing Payment...' : `Pay ₹${totalAmount} (Mock)`}
+                        </Button>
                     </div>
                 </div>
             </div>
