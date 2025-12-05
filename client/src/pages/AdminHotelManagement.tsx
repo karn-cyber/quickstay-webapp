@@ -22,6 +22,7 @@ interface Hotel {
 }
 
 const AdminHotelManagement: React.FC = () => {
+    const navigate = useNavigate();
     const [hotels, setHotels] = useState<Hotel[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
