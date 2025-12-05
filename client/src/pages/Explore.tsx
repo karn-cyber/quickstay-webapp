@@ -23,17 +23,24 @@ interface Hotel {
 }
 
 const Explore: React.FC = () => {
-    const [hotels, setHotels] = useState<Hotel[]>([]);
+    const [hotels, setHotels] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 9; // 3x3 grid
 
     useEffect(() => {
-
         const fetchHotels = async () => {
+            setLoading(true);
             try {
-                const response = await api.get('/hotels/search?location=ALL');
-                setHotels(response.data);
-            } catch (err) {
-                console.error('Failed to fetch hotels', err);
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/hotels/search?location=ALL`);
+                const data = await response.json();
+                setHotels(data);
+                // Calculate total pages
+                setTotalPages(Math.ceil(data.length / itemsPerPage));
+            } catch (error) {
+                console.error('Error fetching hotels:', error);
             } finally {
                 setLoading(false);
             }
@@ -41,6 +48,31 @@ const Explore: React.FC = () => {
 
         fetchHotels();
     }, []);
+
+    // Get current page hotels
+    const indexOfLastHotel = currentPage * itemsPerPage;
+    const indexOfFirstHotel = indexOfLastHotel - itemsPerPage;
+    const currentHotels = hotels
+        .filter(hotel =>
+            hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            hotel.location.address?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .slice(indexOfFirstHotel, indexOfLastHotel);
+
+    // Update total pages when search term changes
+    useEffect(() => {
+        const filteredHotels = hotels.filter(hotel =>
+            hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            hotel.location.address?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setTotalPages(Math.ceil(filteredHotels.length / itemsPerPage));
+        setCurrentPage(1); // Reset to first page on search
+    }, [searchTerm, hotels]);
+
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     if (loading) {
         return (
@@ -81,17 +113,9 @@ const Explore: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Search hotels (e.g., Mumbai, Delhi)..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    const val = e.currentTarget.value;
-                                    setLoading(true);
-                                    api.get(`/hotels/search?location=${val}`).then(res => {
-                                        setHotels(res.data);
-                                        setLoading(false);
-                                    }).catch(() => setLoading(false));
-                                }
-                            }}
                         />
                     </div>
                     <div className="flex space-x-4">
@@ -112,47 +136,112 @@ const Explore: React.FC = () => {
                             <option value="Chennai">Chennai</option>
                         </select>
                     </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {hotels.map((hotel, index) => (
-                        <motion.div
-                            key={hotel.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                        >
-                            <Link to={`/hotels/${hotel.id}`} className="group">
-                                <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                                    <div className="relative h-64 overflow-hidden">
-                                        <img
-                                            src={hotel.images[0]}
-                                            alt={hotel.name}
-                                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                        />
-                                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
-                                            ₹{hotel.price}/night
-                                        </div>
-                                    </div>
-                                    <div className="p-6 flex-1 flex flex-col">
-                                        <h3 className="text-xl font-bold mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">{hotel.name}</h3>
-                                        <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
-                                            {hotel.description}
-                                        </p>
-                                        <div className="mt-auto">
-                                            <div className="flex items-center mb-4">
-                                                <span className="text-yellow-400 font-bold mr-1">★</span>
-                                                <span className="text-gray-600 text-sm">{hotel.rating}</span>
-                                            </div>
-                                            <Button className="w-full">View Details</Button>
-                                        </div>
+                    {/* Hotels Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {currentHotels.map((hotel) => (
+                            <motion.div
+                                key={hotel.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ y: -10 }}
+                                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
+                            >
+                                <div className="relative">
+                                    <img
+                                        src={hotel.images?.[0] || 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
+                                        alt={hotel.name}
+                                        className="w-full h-48 object-cover"
+                                    />
+                                    <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full shadow-md">
+                                        <span className="text-yellow-500 font-bold">⭐ {hotel.rating || 4.5}</span>
                                     </div>
                                 </div>
-                            </Link>
-                        </motion.div>
-                    ))}
+                                <div className="p-6">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{hotel.name}</h3>
+                                    <p className="text-gray-600 text-sm mb-4">
+                                        {hotel.location?.address || 'Location not available'}
+                                    </p>
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <p className="text-sm text-gray-500">From</p>
+                                            <p className="text-2xl font-bold text-blue-600">₹{hotel.price}</p>
+                                            <p className="text-xs text-gray-400">per night</p>
+                                        </div>
+                                        <Link to={`/hotels/${hotel.id}`}>
+                                            <Button>View Details</Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="mt-12 flex justify-center items-center space-x-2">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === 1
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                    }`}
+                            >
+                                Previous
+                            </button>
+
+                            <div className="flex space-x-1">
+                                {[...Array(totalPages)].map((_, index) => {
+                                    const pageNumber = index + 1;
+                                    // Show first page, last page, current page, and pages around current
+                                    if (
+                                        pageNumber === 1 ||
+                                        pageNumber === totalPages ||
+                                        (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                                    ) {
+                                        return (
+                                            <button
+                                                key={pageNumber}
+                                                onClick={() => handlePageChange(pageNumber)}
+                                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === pageNumber
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                    }`}
+                                            >
+                                                {pageNumber}
+                                            </button>
+                                        );
+                                    } else if (
+                                        pageNumber === currentPage - 2 ||
+                                        pageNumber === currentPage + 2
+                                    ) {
+                                        return <span key={pageNumber} className="px-2 py-2 text-gray-400">...</span>;
+                                    }
+                                    return null;
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === totalPages
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                    }`}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
+
+                    {/* No Results Message */}
+                    {currentHotels.length === 0 && !loading && (
+                        <div className="text-center py-20">
+                            <p className="text-gray-500 text-lg">No hotels found matching your search.</p>
+                        </div>
+                    )}
                 </div>
-            </div>
         </MainLayout>
     );
 };
