@@ -171,12 +171,12 @@ const AdminDashboard: React.FC = () => {
                                     cx="50%"
                                     cy="50%"
                                     labelLine={false}
-                                    label={(entry) => `${entry.name}: ${entry.value}`}
+                                    label={(data) => `${data.name}: ${data.value}`}
                                     outerRadius={100}
                                     fill="#8884d8"
                                     dataKey="value"
                                 >
-                                    {statusData.map((entry, index) => (
+                                    {statusData.map((_, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -256,8 +256,8 @@ const AdminDashboard: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${booking.status === 'confirmed'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-yellow-100 text-yellow-800'
                                                 }`}>
                                                 {booking.status}
                                             </span>
