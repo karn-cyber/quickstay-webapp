@@ -9,7 +9,7 @@ const Home: React.FC = () => {
 
     React.useEffect(() => {
         // Fetch featured hotels (using search API for now)
-        fetch('http://localhost:5002/api/hotels/search?location=ALL')
+        fetch('https://quickstay-webapp-production.up.railway.app/api/hotels/search?location=ALL')
             .then(res => res.json())
             .then(data => {
                 // Take first 3 hotels as featured
