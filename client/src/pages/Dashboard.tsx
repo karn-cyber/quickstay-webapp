@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, User, CreditCard, Package, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, User, CreditCard, Package, ChevronDown, ChevronUp } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import api from '../lib/api';
 
@@ -118,8 +118,8 @@ const Dashboard: React.FC = () => {
                                                 />
                                                 <div className="absolute top-4 right-4">
                                                     <span className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide shadow-lg ${booking.status === 'confirmed'
-                                                            ? 'bg-green-500 text-white'
-                                                            : 'bg-yellow-500 text-white'
+                                                        ? 'bg-green-500 text-white'
+                                                        : 'bg-yellow-500 text-white'
                                                         }`}>
                                                         {booking.status}
                                                     </span>
