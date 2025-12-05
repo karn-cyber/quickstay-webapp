@@ -136,3 +136,35 @@ export const getBookingStats = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Error fetching booking statistics' });
     }
 };
+
+// Cancel a booking
+export const cancelBooking = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const booking = await Booking.findById(id);
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        // Check if user owns this booking
+        if (booking.user.toString() !== req.userId) {
+            return res.status(403).json({ message: 'Not authorized to cancel this booking' });
+        }
+
+        // Check if already cancelled
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({ message: 'Booking is already cancelled' });
+        }
+
+        // Update booking status to cancelled
+        booking.status = 'cancelled';
+        await booking.save();
+
+        res.json({ message: 'Booking cancelled successfully', booking });
+    } catch (error) {
+        console.error('Error cancelling booking:', error);
+        res.status(500).json({ message: 'Error cancelling booking' });
+    }
+};

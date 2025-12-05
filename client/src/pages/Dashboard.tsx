@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, User, CreditCard, Package, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, User, CreditCard, Package, ChevronDown, ChevronUp, XCircle } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import api from '../lib/api';
 
@@ -32,6 +32,30 @@ const Dashboard: React.FC = () => {
 
     const toggleBookingDetails = (bookingId: string) => {
         setExpandedBooking(expandedBooking === bookingId ? null : bookingId);
+    };
+
+    const handleCancelBooking = async (bookingId: string, hotelName: string) => {
+        const confirmed = window.confirm(
+            `Are you sure you want to cancel your booking at ${hotelName}?\n\nThis action cannot be undone.`
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await api.patch(`/bookings/${bookingId}/cancel`);
+
+            // Update the booking status in the UI
+            setBookings(bookings.map(booking =>
+                booking._id === bookingId
+                    ? { ...booking, status: 'cancelled' }
+                    : booking
+            ));
+
+            alert('✅ Booking cancelled successfully');
+        } catch (error: any) {
+            console.error('Error cancelling booking:', error);
+            alert(error.response?.data?.message || 'Failed to cancel booking. Please try again.');
+        }
     };
 
     const formatDate = (dateString: string) => {
@@ -197,23 +221,37 @@ const Dashboard: React.FC = () => {
                                                     </div>
                                                 )}
 
-                                                {/* Toggle Button */}
-                                                <button
-                                                    onClick={() => toggleBookingDetails(booking._id)}
-                                                    className="mt-4 flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
-                                                >
-                                                    {isExpanded ? (
-                                                        <>
-                                                            <ChevronUp size={18} className="mr-1" />
-                                                            Hide Details
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <ChevronDown size={18} className="mr-1" />
-                                                            View Details
-                                                        </>
+                                                {/* Action Buttons */}
+                                                <div className="mt-4 flex space-x-3">
+                                                    {/* View Details Toggle */}
+                                                    <button
+                                                        onClick={() => toggleBookingDetails(booking._id)}
+                                                        className="flex-1 flex items-center justify-center text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors py-2 px-4 border border-blue-200 rounded-lg hover:bg-blue-50"
+                                                    >
+                                                        {isExpanded ? (
+                                                            <>
+                                                                <ChevronUp size={18} className="mr-1" />
+                                                                Hide Details
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <ChevronDown size={18} className="mr-1" />
+                                                                View Details
+                                                            </>
+                                                        )}
+                                                    </button>
+
+                                                    {/* Cancel Button - Only show for confirmed bookings */}
+                                                    {booking.status === 'confirmed' && (
+                                                        <button
+                                                            onClick={() => handleCancelBooking(booking._id, booking.hotelName)}
+                                                            className="flex items-center justify-center text-red-600 hover:text-red-700 font-medium text-sm transition-colors py-2 px-4 border border-red-200 rounded-lg hover:bg-red-50"
+                                                        >
+                                                            <XCircle size={18} className="mr-1" />
+                                                            Cancel Booking
+                                                        </button>
                                                     )}
-                                                </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
