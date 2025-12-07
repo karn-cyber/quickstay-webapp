@@ -21,7 +21,7 @@ const Home: React.FC = () => {
     return (
         <MainLayout>
             {/* Hero Section */}
-            <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+            <section className="relative h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <img
                         src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
@@ -36,7 +36,7 @@ const Home: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
-                        className="text-5xl md:text-7xl font-bold mb-6 tracking-tight"
+                        className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight"
                     >
                         Find Your Perfect <span className="text-blue-400">Escape</span>
                     </motion.h1>
@@ -44,7 +44,7 @@ const Home: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        className="text-xl md:text-2xl mb-12 text-gray-200 font-light"
+                        className="text-lg sm:text-xl md:text-2xl mb-8 md:mb-12 text-gray-200 font-light"
                     >
                         Discover luxury accommodations at unbeatable prices.
                     </motion.p>
@@ -54,25 +54,25 @@ const Home: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
-                        className="bg-white p-4 rounded-full shadow-2xl flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 max-w-3xl mx-auto"
+                        className="bg-white p-4 md:p-6 rounded-2xl md:rounded-full shadow-2xl flex flex-col md:flex-row items-stretch md:items-center gap-4 md:space-y-0 md:space-x-4 max-w-3xl mx-auto"
                     >
-                        <div className="flex items-center space-x-2 w-full md:w-auto flex-1 px-4 border-b md:border-b-0 md:border-r border-gray-200 pb-2 md:pb-0">
-                            <MapPin className="text-blue-600" size={20} />
+                        <div className="flex items-center space-x-2 flex-1 px-2 md:px-4 py-2 md:py-0 border-b md:border-b-0 md:border-r border-gray-200">
+                            <MapPin className="text-blue-600 flex-shrink-0" size={20} />
                             <input
                                 type="text"
                                 placeholder="Where are you going?"
                                 className="w-full bg-transparent outline-none text-gray-800 placeholder-gray-400"
                             />
                         </div>
-                        <div className="flex items-center space-x-2 w-full md:w-auto flex-1 px-4 border-b md:border-b-0 md:border-r border-gray-200 pb-2 md:pb-0">
-                            <Calendar className="text-blue-600" size={20} />
+                        <div className="flex items-center space-x-2 flex-1 px-2 md:px-4 py-2 md:py-0 border-b md:border-b-0 md:border-r border-gray-200">
+                            <Calendar className="text-blue-600 flex-shrink-0" size={20} />
                             <input
                                 type="date"
                                 className="w-full bg-transparent outline-none text-gray-800 placeholder-gray-400"
                             />
                         </div>
-                        <div className="flex items-center space-x-2 w-full md:w-auto flex-1 px-4 pb-2 md:pb-0">
-                            <Users className="text-blue-600" size={20} />
+                        <div className="flex items-center space-x-2 flex-1 px-2 md:px-4 py-2 md:py-0 mb-2 md:mb-0">
+                            <Users className="text-blue-600 flex-shrink-0" size={20} />
                             <input
                                 type="number"
                                 min="0"
@@ -80,7 +80,7 @@ const Home: React.FC = () => {
                                 className="w-full bg-transparent outline-none text-gray-800 placeholder-gray-400"
                             />
                         </div>
-                        <Button size="lg" className="w-full md:w-auto" onClick={() => window.location.href = '/explore'}>
+                        <Button size="lg" className="w-full md:w-auto whitespace-nowrap" onClick={() => window.location.href = '/explore'}>
                             Search
                         </Button>
                     </motion.div>

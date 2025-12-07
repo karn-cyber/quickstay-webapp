@@ -183,12 +183,13 @@ const Explore: React.FC = () => {
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
-                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === 1
+                            className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${currentPage === 1
                                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
                                 }`}
                         >
-                            Previous
+                            <span className="hidden sm:inline">Previous</span>
+                            <span className="sm:hidden">Prev</span>
                         </button>
 
                         <div className="flex space-x-1">
@@ -204,7 +205,7 @@ const Explore: React.FC = () => {
                                         <button
                                             key={pageNumber}
                                             onClick={() => handlePageChange(pageNumber)}
-                                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === pageNumber
+                                            className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${currentPage === pageNumber
                                                 ? 'bg-blue-600 text-white'
                                                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                                 }`}
@@ -216,7 +217,7 @@ const Explore: React.FC = () => {
                                     pageNumber === currentPage - 2 ||
                                     pageNumber === currentPage + 2
                                 ) {
-                                    return <span key={pageNumber} className="px-2 py-2 text-gray-400">...</span>;
+                                    return <span key={pageNumber} className="px-1 md:px-2 py-2 text-gray-400 text-sm">...</span>;
                                 }
                                 return null;
                             })}
@@ -225,7 +226,7 @@ const Explore: React.FC = () => {
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
-                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === totalPages
+                            className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${currentPage === totalPages
                                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
                                 }`}

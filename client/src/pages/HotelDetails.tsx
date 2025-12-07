@@ -77,24 +77,34 @@ const HotelDetails: React.FC = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-2">{hotel.name}</h1>
-                    <div className="flex items-center text-gray-600">
-                        <MapPin size={18} className="mr-1 text-blue-600" />
-                        <span>{hotel.location.address}</span>
-                        <span className="mx-2">•</span>
-                        <Star size={18} className="mr-1 text-yellow-400 fill-current" />
-                        <span>{hotel.rating} / 5.0</span>
+                    <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">{hotel.name}</h1>
+                    <div className="flex flex-wrap items-center text-sm md:text-base text-gray-600">
+                        <MapPin size={18} className="mr-1 text-blue-600 flex-shrink-0" />
+                        <span className="mr-2">{hotel.location.address}</span>
+                        <span className="hidden sm:inline mx-2">•</span>
+                        <div className="flex items-center mt-1 sm:mt-0">
+                            <Star size={18} className="mr-1 text-yellow-400 fill-current" />
+                            <span>{hotel.rating} / 5.0</span>
+                        </div>
                     </div>
                 </div>
 
                 {/* Images */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12 rounded-2xl overflow-hidden h-[500px]">
-                    <img src={hotel.images[0]} alt={hotel.name} className="w-full h-full object-cover" />
-                    <div className="grid grid-cols-2 gap-4">
-                        <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Room" className="w-full h-full object-cover" />
-                        <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Room" className="w-full h-full object-cover" />
-                        <img src="https://images.unsplash.com/photo-1584132967334-10e028bd69f7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Room" className="w-full h-full object-cover" />
-                        <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Room" className="w-full h-full object-cover" />
+                <div className="mb-12 rounded-2xl overflow-hidden">
+                    {/* Main image always visible */}
+                    <div className="w-full h-64 md:h-auto md:hidden">
+                        <img src={hotel.images[0]} alt={hotel.name} className="w-full h-full object-cover" />
+                    </div>
+
+                    {/* Desktop grid layout */}
+                    <div className="hidden md:grid md:grid-cols-2 gap-4 h-[500px]">
+                        <img src={hotel.images[0]} alt={hotel.name} className="w-full h-full object-cover" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Room" className="w-full h-full object-cover" />
+                            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Room" className="w-full h-full object-cover" />
+                            <img src="https://images.unsplash.com/photo-1584132967334-10e028bd69f7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Room" className="w-full h-full object-cover" />
+                            <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Room" className="w-full h-full object-cover" />
+                        </div>
                     </div>
                 </div>
 
@@ -110,7 +120,7 @@ const HotelDetails: React.FC = () => {
                         {/* Amenities */}
                         <section>
                             <h2 className="text-2xl font-bold text-gray-900 mb-4">What this place offers</h2>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {hotel.amenities.map((amenity, index) => (
                                     <div key={index} className="flex items-center text-gray-600">
                                         <Wifi size={20} className="mr-3 text-blue-600" />
