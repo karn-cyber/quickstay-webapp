@@ -54,8 +54,11 @@ export const getBookingStats = async (req: Request, res: Response) => {
         // Total bookings
         const totalBookings = await Booking.countDocuments();
 
-        // Total revenue
+        // Total revenue (excluding cancelled)
         const revenueResult = await Booking.aggregate([
+            {
+                $match: { status: { $ne: 'cancelled' } }
+            },
             {
                 $group: {
                     _id: null,
@@ -92,7 +95,11 @@ export const getBookingStats = async (req: Request, res: Response) => {
                         month: { $month: '$createdAt' }
                     },
                     count: { $sum: 1 },
-                    revenue: { $sum: '$totalPrice' }
+                    revenue: {
+                        $sum: {
+                            $cond: [{ $ne: ['$status', 'cancelled'] }, '$totalPrice', 0]
+                        }
+                    }
                 }
             },
             {
@@ -106,7 +113,11 @@ export const getBookingStats = async (req: Request, res: Response) => {
                 $group: {
                     _id: '$hotelName',
                     bookings: { $sum: 1 },
-                    revenue: { $sum: '$totalPrice' }
+                    revenue: {
+                        $sum: {
+                            $cond: [{ $ne: ['$status', 'cancelled'] }, '$totalPrice', 0]
+                        }
+                    }
                 }
             },
             {

@@ -15,6 +15,7 @@ import AdminBookingManagement from './pages/AdminBookingManagement';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 
 function App() {
   return (
@@ -29,11 +30,15 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/hotels" element={<AdminHotelManagement />} />
-          <Route path="/admin/hotels/create" element={<AdminHotelCreate />} />
-          <Route path="/admin/hotels/:id/edit" element={<AdminHotelEdit />} />
-          <Route path="/admin/bookings" element={<AdminBookingManagement />} />
+
+          {/* Protected Admin Routes */}
+          <Route element={<ProtectedAdminRoute />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/hotels" element={<AdminHotelManagement />} />
+            <Route path="/admin/hotels/create" element={<AdminHotelCreate />} />
+            <Route path="/admin/hotels/:id/edit" element={<AdminHotelEdit />} />
+            <Route path="/admin/bookings" element={<AdminBookingManagement />} />
+          </Route>
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<ContactUs />} />
         </Routes>
