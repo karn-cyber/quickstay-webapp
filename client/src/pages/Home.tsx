@@ -1,11 +1,31 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Calendar, Users } from 'lucide-react';
 import Button from '../components/ui/Button';
 import MainLayout from '../layouts/MainLayout';
 
 const Home: React.FC = () => {
     const [featuredHotels, setFeaturedHotels] = React.useState<any[]>([]);
+    const [location, setLocation] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const locationInputRef = useRef<HTMLDivElement>(null);
+
+    const availableLocations = [
+        'Mumbai',
+        'Delhi',
+        'Bangalore',
+        'Chennai',
+        'Pune',
+        'Kolkata',
+        'Hyderabad',
+        'Ahmedabad'
+    ];
+
+    const filteredLocations = location
+        ? availableLocations.filter(loc =>
+            loc.toLowerCase().includes(location.toLowerCase())
+        )
+        : availableLocations;
 
     React.useEffect(() => {
         // Fetch featured hotels (using search API for now)
@@ -17,6 +37,29 @@ const Home: React.FC = () => {
             })
             .catch(err => console.error('Failed to fetch featured hotels', err));
     }, []);
+
+    // Close suggestions when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (locationInputRef.current && !locationInputRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleLocationSelect = (selectedLocation: string) => {
+        setLocation(selectedLocation);
+        setShowSuggestions(false);
+    };
+
+    const handleSearch = () => {
+        const searchParams = new URLSearchParams();
+        if (location) searchParams.append('location', location);
+        window.location.href = `/explore?${searchParams.toString()}`;
+    };
 
     return (
         <MainLayout>
@@ -56,13 +99,39 @@ const Home: React.FC = () => {
                         transition={{ duration: 0.8, delay: 0.4 }}
                         className="bg-white p-4 md:p-6 rounded-2xl md:rounded-full shadow-2xl flex flex-col md:flex-row items-stretch md:items-center gap-4 md:space-y-0 md:space-x-4 max-w-3xl mx-auto"
                     >
-                        <div className="flex items-center space-x-2 flex-1 px-2 md:px-4 py-2 md:py-0 border-b md:border-b-0 md:border-r border-gray-200">
+                        <div ref={locationInputRef} className="relative flex items-center space-x-2 flex-1 px-2 md:px-4 py-2 md:py-0 border-b md:border-b-0 md:border-r border-gray-200">
                             <MapPin className="text-blue-600 flex-shrink-0" size={20} />
                             <input
                                 type="text"
                                 placeholder="Where are you going?"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                onFocus={() => setShowSuggestions(true)}
                                 className="w-full bg-transparent outline-none text-gray-800 placeholder-gray-400"
                             />
+
+                            {/* Location Suggestions Dropdown */}
+                            <AnimatePresence>
+                                {showSuggestions && filteredLocations.length > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-y-auto z-50"
+                                    >
+                                        {filteredLocations.map((loc) => (
+                                            <button
+                                                key={loc}
+                                                onClick={() => handleLocationSelect(loc)}
+                                                className="w-full text-left px-4 py-3 hover:bg-blue-50 text-gray-800 transition-colors first:rounded-t-lg last:rounded-b-lg flex items-center space-x-2"
+                                            >
+                                                <MapPin size={16} className="text-blue-600 flex-shrink-0" />
+                                                <span>{loc}</span>
+                                            </button>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                         <div className="flex items-center space-x-2 flex-1 px-2 md:px-4 py-2 md:py-0 border-b md:border-b-0 md:border-r border-gray-200">
                             <Calendar className="text-blue-600 flex-shrink-0" size={20} />
@@ -80,7 +149,7 @@ const Home: React.FC = () => {
                                 className="w-full bg-transparent outline-none text-gray-800 placeholder-gray-400"
                             />
                         </div>
-                        <Button size="lg" className="w-full md:w-auto whitespace-nowrap" onClick={() => window.location.href = '/explore'}>
+                        <Button size="lg" className="w-full md:w-auto whitespace-nowrap" onClick={handleSearch}>
                             Search
                         </Button>
                     </motion.div>

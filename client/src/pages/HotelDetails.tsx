@@ -26,11 +26,37 @@ const HotelDetails: React.FC = () => {
     const navigate = useNavigate();
     const [hotel, setHotel] = useState<Hotel | null>(null);
     const [loading, setLoading] = useState(true);
+    const [guests, setGuests] = useState(2);
+    const [roomType, setRoomType] = useState<'standard' | 'double' | 'spa' | 'suite'>('standard');
     const [addons, setAddons] = useState({
         breakfast: false,
         carRental: false,
         airportShuttle: false,
     });
+
+    // Room type pricing multipliers
+    const roomTypeMultipliers = {
+        standard: { multiplier: 1, name: 'Standard Room', description: 'Comfortable room with essential amenities' },
+        double: { multiplier: 1.3, name: 'Double Bed Room', description: 'Spacious room with king-size bed' },
+        spa: { multiplier: 1.6, name: 'Spa Suite', description: 'Luxury room with spa and wellness facilities' },
+        suite: { multiplier: 2, name: 'Premium Suite', description: 'Ultimate luxury with separate living area' },
+    };
+
+    // Calculate dynamic price
+    const calculatePrice = () => {
+        if (!hotel) return 0;
+        const basePrice = hotel.price;
+
+        // Guest multiplier: base is for 2 guests, doubles for 4, etc.
+        const guestMultiplier = guests / 2;
+
+        // Room type multiplier
+        const roomMultiplier = roomTypeMultipliers[roomType].multiplier;
+
+        return Math.round(basePrice * guestMultiplier * roomMultiplier);
+    };
+
+    const finalPrice = calculatePrice();
 
     useEffect(() => {
         const fetchHotel = async () => {
@@ -48,8 +74,8 @@ const HotelDetails: React.FC = () => {
     }, [id]);
 
     const handleBooking = () => {
-        // Navigate to checkout with hotel and addons data
-        navigate('/checkout', { state: { hotel, addons } });
+        // Navigate to checkout with hotel, addons, and pricing data
+        navigate('/checkout', { state: { hotel, addons, guests, roomType, finalPrice } });
     };
 
     if (loading) {
@@ -165,14 +191,82 @@ const HotelDetails: React.FC = () => {
                     {/* Right Column: Booking Card */}
                     <div className="lg:col-span-1">
                         <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 sticky top-24">
-                            <div className="flex justify-between items-end mb-6">
-                                <div>
-                                    <span className="text-3xl font-bold text-gray-900">₹{hotel.price}</span>
-                                    <span className="text-gray-500"> / night</span>
+                            <div className="mb-6">
+                                <div className="flex justify-between items-end mb-2">
+                                    <div>
+                                        <span className="text-sm text-gray-500">Base Price (2 guests)</span>
+                                        <div className="flex items-baseline">
+                                            <span className="text-3xl font-bold text-gray-900">₹{hotel.price}</span>
+                                            <span className="text-gray-500 ml-2">/ night</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center text-sm text-gray-600">
+                                        <Star size={16} className="text-yellow-400 fill-current mr-1" />
+                                        <span>{hotel.rating}</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center text-sm text-gray-600">
-                                    <Star size={16} className="text-yellow-400 fill-current mr-1" />
-                                    <span>{hotel.rating}</span>
+                                {finalPrice !== hotel.price && (
+                                    <div className="mt-2 p-2 bg-blue-50 rounded">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-medium text-blue-900">Your Price:</span>
+                                            <span className="text-2xl font-bold text-blue-600">₹{finalPrice}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Guest Selector */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                    Number of Guests
+                                </label>
+                                <select
+                                    value={guests}
+                                    onChange={(e) => setGuests(Number(e.target.value))}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                >
+                                    <option value={1}>1 Guest (+50% per person)</option>
+                                    <option value={2}>2 Guests (Base Price)</option>
+                                    <option value={3}>3 Guests (+50%)</option>
+                                    <option value={4}>4 Guests (× 2)</option>
+                                    <option value={5}>5 Guests (+150%)</option>
+                                    <option value={6}>6 Guests (× 3)</option>
+                                </select>
+                            </div>
+
+                            {/* Room Type Selector */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                    Room Type
+                                </label>
+                                <div className="space-y-2">
+                                    {(Object.entries(roomTypeMultipliers) as [keyof typeof roomTypeMultipliers, typeof roomTypeMultipliers[keyof typeof roomTypeMultipliers]][]).map(([key, option]) => (
+                                        <label
+                                            key={key}
+                                            className={`flex items-start p-3 border-2 rounded-lg cursor-pointer transition-all ${roomType === key
+                                                    ? 'border-blue-500 bg-blue-50'
+                                                    : 'border-gray-200 hover:border-blue-300'
+                                                }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="roomType"
+                                                value={key}
+                                                checked={roomType === key}
+                                                onChange={(e) => setRoomType(e.target.value as any)}
+                                                className="mt-1 h-4 w-4 text-blue-600"
+                                            />
+                                            <div className="ml-3 flex-1">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="font-medium text-gray-900">{option.name}</span>
+                                                    <span className="text-sm text-blue-600 font-semibold">
+                                                        {option.multiplier === 1 ? 'Included' : `+${Math.round((option.multiplier - 1) * 100)}%`}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-0.5">{option.description}</p>
+                                            </div>
+                                        </label>
+                                    ))}
                                 </div>
                             </div>
 

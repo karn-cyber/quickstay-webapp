@@ -26,67 +26,85 @@ const Navbar: React.FC = () => {
 
     return (
         <nav
-            className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-black/90 backdrop-blur-md shadow-sm' : 'bg-black'
+            className={`fixed w-full z-50 transition-all duration-500 ${isScrolled
+                    ? 'bg-gradient-to-r from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-xl shadow-2xl border-b border-white/10'
+                    : 'bg-gradient-to-r from-black via-gray-900 to-black'
                 }`}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
-                    {/* Logo */}
-                    <Link to="/" className="flex items-center space-x-2">
-                        <span className="text-2xl font-bold text-white">
-                            Quick<span className="text-blue-500">Stay</span>
+                    {/* Premium Logo */}
+                    <Link to="/" className="flex items-center space-x-2 group">
+                        <div className="relative">
+                            {/* Logo background glow */}
+                            <div className="absolute inset-0 bg-blue-500/20 rounded-lg blur-xl group-hover:bg-blue-500/30 transition-all duration-300"></div>
+                            <span className="relative text-2xl font-bold bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">
+                                Quick<span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text">Stay</span>
+                            </span>
+                        </div>
+                        {/* Premium badge */}
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-black">
+                            PREMIUM
                         </span>
                     </Link>
 
                     {/* Desktop Menu */}
-                    <div className="hidden md:flex items-center space-x-8">
-                        <Link to="/" className="text-gray-300 hover:text-white transition-colors">
-                            Home
+                    <div className="hidden md:flex items-center space-x-2">
+                        <Link to="/" className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group">
+                            <span className="relative z-10">Home</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-blue-600/10 to-blue-600/0 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                         </Link>
-                        <Link to="/explore" className="text-gray-300 hover:text-white transition-colors">
-                            Explore
+                        <Link to="/explore" className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group">
+                            <span className="relative z-10">Explore</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-blue-600/10 to-blue-600/0 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                         </Link>
-                        <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
-                            About Us
+                        <Link to="/about" className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group">
+                            <span className="relative z-10">About Us</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-blue-600/10 to-blue-600/0 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                         </Link>
-                        <Link to="/contact" className="text-gray-300 hover:text-white transition-colors">
-                            Contact
+                        <Link to="/contact" className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group">
+                            <span className="relative z-10">Contact</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-blue-600/10 to-blue-600/0 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                         </Link>
                     </div>
 
                     {/* Right Side Actions */}
                     <div className="hidden md:flex items-center space-x-4">
-                        <button className="p-2 rounded-full text-white hover:bg-white/10 transition-colors">
+                        <button className="p-2.5 rounded-full text-white hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 transition-all duration-300 backdrop-blur-sm border border-white/10 hover:border-white/20">
                             <Search size={20} />
                         </button>
 
                         {isAuthenticated ? (
-                            <div className="flex items-center space-x-4">
-                                <Link to="/dashboard" className="flex items-center space-x-2 text-white hover:text-blue-400 group">
+                            <div className="flex items-center space-x-3">
+                                <Link to="/dashboard" className="flex items-center space-x-2 px-4 py-2 rounded-full text-white hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300 group backdrop-blur-sm">
                                     {user?.picture ? (
                                         <img
                                             src={user.picture}
                                             alt={user.name}
-                                            className="w-8 h-8 rounded-full border-2 border-transparent group-hover:border-blue-400 object-cover"
+                                            className="w-7 h-7 rounded-full border-2 border-blue-400/50 group-hover:border-blue-400 object-cover transition-all duration-300"
                                         />
                                     ) : (
-                                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center border-2 border-transparent group-hover:border-blue-400">
-                                            <UserIcon size={16} className="text-gray-300" />
+                                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-2 border-blue-400/50 group-hover:border-blue-400 transition-all duration-300">
+                                            <UserIcon size={14} className="text-white" />
                                         </div>
                                     )}
-                                    <span>Profile</span>
+                                    <span className="text-sm font-medium">Profile</span>
                                 </Link>
                                 <button
                                     onClick={handleLogout}
-                                    className="p-2 text-gray-300 hover:text-white transition-colors"
+                                    className="p-2.5 text-gray-300 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all duration-300 border border-white/10 hover:border-red-400/30"
                                     title="Sign Out"
                                 >
-                                    <LogOut size={20} />
+                                    <LogOut size={18} />
                                 </button>
                             </div>
                         ) : (
-                            <Link to="/login" className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
-                                Sign In
+                            <Link
+                                to="/login"
+                                className="relative px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full hover:from-blue-500 hover:to-blue-600 transition-all duration-300 shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 font-medium"
+                            >
+                                <span className="relative z-10">Sign In</span>
+                                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 to-purple-600 opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
                             </Link>
                         )}
                     </div>
@@ -95,7 +113,7 @@ const Navbar: React.FC = () => {
                     <div className="md:hidden flex items-center">
                         <button
                             onClick={() => setIsOpen(!isOpen)}
-                            className="p-2 rounded-md text-white"
+                            className="p-2 rounded-lg text-white hover:bg-white/10 border border-white/10 transition-all duration-300"
                         >
                             {isOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>

@@ -16,6 +16,7 @@ interface Booking {
 const Dashboard: React.FC = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [expandedBooking, setExpandedBooking] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'current' | 'previous'>('current');
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -29,6 +30,24 @@ const Dashboard: React.FC = () => {
 
         fetchBookings();
     }, []);
+
+    // Separate bookings into current and previous based on checkout date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const currentBookings = bookings.filter(booking => {
+        const checkoutDate = new Date(booking.checkOutDate);
+        checkoutDate.setHours(0, 0, 0, 0);
+        return checkoutDate >= today && booking.status !== 'cancelled';
+    });
+
+    const previousBookings = bookings.filter(booking => {
+        const checkoutDate = new Date(booking.checkOutDate);
+        checkoutDate.setHours(0, 0, 0, 0);
+        return checkoutDate < today || booking.status === 'cancelled';
+    });
+
+    const displayedBookings = activeTab === 'current' ? currentBookings : previousBookings;
 
     const toggleBookingDetails = (bookingId: string) => {
         setExpandedBooking(expandedBooking === bookingId ? null : bookingId);
@@ -94,8 +113,8 @@ const Dashboard: React.FC = () => {
                     <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-green-100 text-sm font-medium">Confirmed</p>
-                                <p className="text-3xl font-bold mt-1">{bookings.filter(b => b.status === 'confirmed').length}</p>
+                                <p className="text-green-100 text-sm font-medium">Current Bookings</p>
+                                <p className="text-3xl font-bold mt-1">{currentBookings.length}</p>
                             </div>
                             <Calendar size={40} className="opacity-80" />
                         </div>
@@ -111,21 +130,55 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Bookings Section */}
+                {/* Bookings Section with Tabs */}
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">My Bookings</h2>
-                    {bookings.length === 0 ? (
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">My Bookings</h2>
+
+                        {/* Tab Switcher */}
+                        <div className="flex bg-gray-100 rounded-lg p-1">
+                            <button
+                                onClick={() => setActiveTab('current')}
+                                className={`px-6 py-2 rounded-md font-medium transition-all duration-200 ${activeTab === 'current'
+                                    ? 'bg-white text-blue-600 shadow-md'
+                                    : 'text-gray-600 hover:text-gray-900'
+                                    }`}
+                            >
+                                Current ({currentBookings.length})
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('previous')}
+                                className={`px-6 py-2 rounded-md font-medium transition-all duration-200 ${activeTab === 'previous'
+                                    ? 'bg-white text-blue-600 shadow-md'
+                                    : 'text-gray-600 hover:text-gray-900'
+                                    }`}
+                            >
+                                Previous ({previousBookings.length})
+                            </button>
+                        </div>
+                    </div>
+
+                    {displayedBookings.length === 0 ? (
                         <div className="bg-white rounded-2xl shadow-md p-12 text-center">
                             <Package size={64} className="mx-auto text-gray-300 mb-4" />
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No bookings yet</h3>
-                            <p className="text-gray-600 mb-6">Start exploring amazing hotels and make your first booking!</p>
-                            <a href="/explore" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors">
-                                Explore Hotels
-                            </a>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                {activeTab === 'current' ? 'No current bookings' : 'No previous bookings'}
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                                {activeTab === 'current'
+                                    ? 'Start exploring amazing hotels and make your first booking!'
+                                    : 'Your completed bookings will appear here.'
+                                }
+                            </p>
+                            {activeTab === 'current' && (
+                                <a href="/explore" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors">
+                                    Explore Hotels
+                                </a>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {bookings.map((booking) => {
+                            {displayedBookings.map((booking) => {
                                 const nights = calculateNights(booking.checkInDate, booking.checkOutDate);
                                 const pricePerNight = Math.round(booking.totalPrice / nights);
                                 const isExpanded = expandedBooking === booking._id;
