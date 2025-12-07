@@ -168,3 +168,32 @@ export const cancelBooking = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Error cancelling booking' });
     }
 };
+
+// Update booking status (Admin only)
+export const updateBookingStatus = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        // Validate status
+        const validStatuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ message: 'Invalid status value' });
+        }
+
+        const booking = await Booking.findByIdAndUpdate(
+            id,
+            { $set: { status } },
+            { new: true }
+        ).populate('user', 'name email');
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        res.json({ message: 'Booking status updated successfully', booking });
+    } catch (error) {
+        console.error('Error updating booking status:', error);
+        res.status(500).json({ message: 'Error updating booking status' });
+    }
+};

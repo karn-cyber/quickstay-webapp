@@ -10,6 +10,8 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminHotelManagement from './pages/AdminHotelManagement';
 import AdminHotelCreate from './pages/AdminHotelCreate';
+import AdminHotelEdit from './pages/AdminHotelEdit';
+import AdminBookingManagement from './pages/AdminBookingManagement';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import { AuthProvider } from './context/AuthContext';
@@ -30,6 +32,8 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/hotels" element={<AdminHotelManagement />} />
           <Route path="/admin/hotels/create" element={<AdminHotelCreate />} />
+          <Route path="/admin/hotels/:id/edit" element={<AdminHotelEdit />} />
+          <Route path="/admin/bookings" element={<AdminBookingManagement />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<ContactUs />} />
         </Routes>

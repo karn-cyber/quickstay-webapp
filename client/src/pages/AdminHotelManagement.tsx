@@ -178,7 +178,7 @@ const AdminHotelManagement: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button
-                                                onClick={() => window.location.href = `/admin/hotels/${hotel._id}/edit`}
+                                                onClick={() => navigate(`/admin/hotels/${hotel._id}/edit`)}
                                                 className="text-blue-600 hover:text-blue-900 mr-4"
                                             >
                                                 <Edit size={18} />
