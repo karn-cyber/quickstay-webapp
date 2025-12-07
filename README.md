@@ -336,90 +336,123 @@ quickstay-webapp/
 
 ## 🔌 Complete API Documentation
 
-**Base URL:** `https://quickstay-webapp-production.up.railway.app/api`  
-**Local Development:** `http://localhost:5002/api`
+**Base URL (Production):** `https://quickstay-webapp-production.up.railway.app/api`  
+**Base URL (Development):** `http://localhost:5002/api`
 
-### Authentication Endpoints
-
-#### Register New User
-```http
-POST /auth/register
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "securePassword123"
-}
-
-Response: 201 Created
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "_id": "507f1f77bcf86cd799439011",
-    "name": "John Doe",
-    "email": "john@example.com",
-    "role": "user"
-  }
-}
-```
-
-#### Login User
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "securePassword123"
-}
-
-Response: 200 OK
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": { ... }
-}
-```
-
-#### Google OAuth Login
-```http
-POST /auth/google
-Content-Type: application/json
-
-{
-  "token": "google_oauth_id_token"
-}
-
-Response: 200 OK
-{
-  "token": "jwt_token",
-  "user": { ... }
-}
-```
-
-#### Get Current User
-```http
-GET /auth/me
-Authorization: Bearer {jwt_token}
-
-Response: 200 OK
-{
-  "_id": "507f1f77bcf86cd799439011",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "role": "user"
-}
-```
+**Total Routes:** 26 endpoints across 6 route modules
 
 ---
 
-### Hotel Endpoints
+### 🔐 Authentication Routes (`/api/auth`)
 
-#### Search Hotels
-```http
-GET /hotels/search?location={location}&priceMin={min}&priceMax={max}
+All authentication endpoints are public and do not require a JWT token.
 
-Response: 200 OK
+#### 1. Register New User
+**Endpoint:** `POST /auth/register`
+
+**Description:** Create a new user account with email and password.
+
+**Request Body:**
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securePassword123"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "userId": "507f1f77bcf86cd799439011",
+  "role": "user",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "picture": null
+}
+```
+
+**Error Responses:**
+- `400` - User already exists
+- `500` - Server error
+
+---
+
+#### 2. Login User
+**Endpoint:** `POST /auth/login`
+
+**Description:** Authenticate user with email and password.
+
+**Request Body:**
+```json
+{
+  "email": "john@example.com",
+  "password": "securePassword123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "userId": "507f1f77bcf86cd799439011",
+  "role": "user",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "picture": null
+}
+```
+
+**Error Responses:**
+- `400` - Invalid credentials
+- `500` - Server error
+
+---
+
+#### 3. Google OAuth Login
+**Endpoint:** `POST /auth/google`
+
+**Description:** Authenticate user via Google OAuth 2.0.
+
+**Request Body:**
+```json
+{
+  "token": "google_oauth_id_token_from_frontend"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "userId": "507f1f77bcf86cd799439011",
+  "role": "user",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "picture": "https://lh3.googleusercontent.com/..."
+}
+```
+
+**Error Responses:**
+- `500` - Google login failed
+
+---
+
+### 🏨 Hotel Routes (`/api/hotels`)
+
+#### 4. Search Hotels (Public)
+**Endpoint:** `GET /hotels/search`
+
+**Description:** Search hotels using legacy Amadeus API or mock data.
+
+**Query Parameters:**
+- `location` (optional) - Location to search (default: "ALL")
+
+**Example:** `GET /hotels/search?location=Mumbai`
+
+**Response (200 OK):**
+```json
 [
   {
     "id": "hotel123",
@@ -429,157 +462,328 @@ Response: 200 OK
       "latitude": 19.0760,
       "longitude": 72.8777
     },
-    "description": "5-star luxury hotel...",
+    "description": "5-star luxury hotel with premium amenities",
     "rating": 4.8,
     "price": 15000,
-    "images": ["url1", "url2"],
-    "amenities": ["WiFi", "Pool", "Spa"]
+    "images": ["url1", "url2", "url3"],
+    "amenities": ["WiFi", "Pool", "Spa", "Gym", "Restaurant"]
   }
 ]
 ```
 
-####Get All Hotels (Paginated)
-```http
-GET /hotels/all?page=1&limit=10&sortBy=price&order=asc&search=Mumbai
-Authorization: Bearer {jwt_token} (Admin only)
+---
 
-Response: 200 OK
+#### 5. Get All Hotels with Pagination (Public)
+**Endpoint:** `GET /hotels/all`
+
+**Description:** Retrieve all hotels with advanced filtering, sorting, and pagination.
+
+**Query Parameters:**
+- `page` (optional, default: 1) - Page number
+- `limit` (optional, default: 10) - Items per page
+- `sortBy` (optional, default: "createdAt") - Field to sort by
+- `order` (optional, default: "desc") - Sort order (asc/desc)
+- `search` (optional) - Text search
+- `minPrice` (optional) - Minimum price filter
+- `maxPrice` (optional) - Maximum price filter
+- `minRating` (optional) - Minimum rating filter
+- `amenities` (optional) - Comma-separated amenities
+
+**Example:** `GET /hotels/all?page=1&limit=9&sortBy=price&order=asc&search=Mumbai&minRating=4`
+
+**Response (200 OK):**
+```json
 {
-  "data": [...hotels],
+  "data": [
+    {
+      "_id": "6756ab...",
+      "name": "Taj Hotel",
+      "location": {...},
+      "price": 12000,
+      "rating": 4.5,
+      "amenities": ["WiFi", "Pool"]
+    }
+  ],
   "pagination": {
+    "total": 45,
     "page": 1,
-    "limit": 10,
-    "totalPages": 5,
-    "totalItems": 45
+    "limit": 9,
+    "totalPages": 5
   }
-}
-```
-
-#### Get Hotel by ID
-```http
-GET /hotels/:id
-
-Response: 200 OK
-{
-  "id": "hotel123",
-  "name": "Luxury Grand Hotel",
-  ...
-}
-```
-
-#### Create Hotel (Admin)
-```http
-POST /hotels
-Authorization: Bearer {admin_jwt_token}
-Content-Type: application/json
-
-{
-  "name": "New Hotel",
-  "location": {
-    "address": "456 Park Ave, Delhi",
-    "latitude": 28.6139,
-    "longitude": 77.2090
-  },
-  "description": "Modern hotel with excellent amenities",
-  "rating": 4.5,
-  "price": 12000,
-  "images": ["image_url"],
-  "amenities": ["WiFi", "Gym"]
-}
-
-Response: 201 Created
-```
-
-#### Update Hotel (Admin)
-```http
-PUT /hotels/:id
-Authorization: Bearer {admin_jwt_token}
-Content-Type: application/json
-
-{
-  "price": 13000,
-  "rating": 4.7
-}
-
-Response: 200 OK
-```
-
-#### Delete Hotel (Admin)
-```http
-DELETE /hotels/:id
-Authorization: Bearer {admin_jwt_token}
-
-Response: 200 OK
-{
-  "message": "Hotel deleted successfully"
 }
 ```
 
 ---
 
-### Booking Endpoints
+#### 6. Get Hotel by ID (Public)
+**Endpoint:** `GET /hotels/:id`
 
-#### Create Booking
-```http
-POST /bookings
-Authorization: Bearer {jwt_token}
+**Description:** Get detailed information about a specific hotel.
+
+**Path Parameters:**
+- `id` - Hotel ID (MongoDB ObjectId or legacy ID)
+
+**Example:** `GET /hotels/6756ab1234567890abcdef12`
+
+**Response (200 OK):**
+```json
+{
+  "_id": "6756ab1234567890abcdef12",
+  "name": "Luxury Grand Hotel",
+  "location": {
+    "address": "123 Main St, Mumbai",
+    "latitude": 19.0760,
+    "longitude": 72.8777
+  },
+  "description": "Premium 5-star hotel",
+  "rating": 4.8,
+  "price": 15000,
+  "images": ["url1", "url2"],
+  "amenities": ["WiFi", "Pool", "Spa"],
+  "createdAt": "2024-11-15T10:30:00.000Z"
+}
+```
+
+**Error Responses:**
+- `404` - Hotel not found
+
+---
+
+#### 7. Create Hotel (Admin Only) 🔒
+**Endpoint:** `POST /hotels`
+
+**Authentication:** Required (Admin role)
+
+**Description:** Create a new hotel in the database.
+
+**Headers:**
+```
+Authorization: Bearer {admin_jwt_token}
 Content-Type: application/json
+```
 
+**Request Body:**
+```json
+{
+  "name": "New Boutique Hotel",
+  "location": {
+    "address": "456 Park Ave, Delhi, India",
+    "latitude": 28.6139,
+    "longitude": 77.2090
+  },
+  "description": "Modern boutique hotel with contemporary design",
+  "rating": 4.5,
+  "price": 12000,
+  "images": ["https://example.com/image1.jpg"],
+  "amenities": ["WiFi", "Gym", "Restaurant", "Room Service"]
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "_id": "6756ab1234567890abcdef13",
+  "name": "New Boutique Hotel",
+  "location": {...},
+  "price": 12000,
+  "createdAt": "2024-12-08T01:20:00.000Z"
+}
+```
+
+---
+
+#### 8. Update Hotel (Admin Only) 🔒
+**Endpoint:** `PUT /hotels/:id`
+
+**Authentication:** Required (Admin role)
+
+**Description:** Update an existing hotel's details.
+
+**Headers:**
+```
+Authorization: Bearer {admin_jwt_token}
+```
+
+**Request Body (partial update):**
+```json
+{
+  "price": 13000,
+  "rating": 4.7,
+  "amenities": ["WiFi", "Pool", "Spa", "Gym"]
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "_id": "6756ab1234567890abcdef12",
+  "name": "Luxury Grand Hotel",
+  "price": 13000,
+  "rating": 4.7,
+  "updatedAt": "2024-12-08T01:25:00.000Z"
+}
+```
+
+**Error Responses:**
+- `404` - Hotel not found
+
+---
+
+#### 9. Delete Hotel (Admin Only) 🔒
+**Endpoint:** `DELETE /hotels/:id`
+
+**Authentication:** Required (Admin role)
+
+**Description:** Delete a hotel from the database.
+
+**Headers:**
+```
+Authorization: Bearer {admin_jwt_token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Hotel deleted successfully",
+  "hotel": {...}
+}
+```
+
+**Error Responses:**
+- `404` - Hotel not found
+
+---
+
+### 📅 Booking Routes (`/api/bookings`)
+
+#### 10. Create Booking 🔒
+**Endpoint:** `POST /bookings`
+
+**Authentication:** Required
+
+**Description:** Create a new hotel booking.
+
+**Headers:**
+```
+Authorization: Bearer {jwt_token}
+```
+
+**Request Body:**
+```json
 {
   "room": "room123",
   "hotelName": "Luxury Grand Hotel",
-  "hotelImage": "image_url",
+  "hotelImage": "https://example.com/hotel.jpg",
   "checkInDate": "2024-12-20",
   "checkOutDate": "2024-12-25",
   "totalPrice": 75000
 }
+```
 
-Response: 201 Created
+**Response (201 Created):**
+```json
 {
   "_id": "booking123",
-  "user": "user123",
+  "user": "507f1f77bcf86cd799439011",
   "room": "room123",
   "hotelName": "Luxury Grand Hotel",
+  "hotelImage": "https://example.com/hotel.jpg",
+  "checkInDate": "2024-12-20T00:00:00.000Z",
+  "checkOutDate": "2024-12-25T00:00:00.000Z",
+  "totalPrice": 75000,
   "status": "confirmed",
-  ...
+  "createdAt": "2024-12-08T01:30:00.000Z"
 }
 ```
 
-#### Get My Bookings
-```http
-GET /bookings/my-bookings
-Authorization: Bearer {jwt_token}
+**Error Responses:**
+- `400` - Hotel name is required
 
-Response: 200 OK
+---
+
+#### 11. Get My Bookings 🔒
+**Endpoint:** `GET /bookings/my-bookings`
+
+**Authentication:** Required
+
+**Description:** Get all bookings for the authenticated user.
+
+**Headers:**
+```
+Authorization: Bearer {jwt_token}
+```
+
+**Response (200 OK):**
+```json
 [
   {
     "_id": "booking123",
     "hotelName": "Luxury Grand Hotel",
-    "hotelImage": "image_url",
+    "hotelImage": "https://example.com/hotel.jpg",
     "checkInDate": "2024-12-20T00:00:00.000Z",
     "checkOutDate": "2024-12-25T00:00:00.000Z",
     "status": "confirmed",
     "totalPrice": 75000,
     "createdAt": "2024-12-01T10:30:00.000Z"
+  },
+  {
+    "_id": "booking124",
+    "hotelName": "Beach Resort",
+    "status": "cancelled",
+    "totalPrice": 45000,
+    "createdAt": "2024-11-15T14:20:00.000Z"
   }
 ]
 ```
 
-#### Get All Bookings (Admin)
-```http
-GET /bookings
-Authorization: Bearer {admin_jwt_token}
+---
 
-Response: 200 OK
-[...all bookings with user details]
+#### 12. Get All Bookings (Admin Only) 🔒
+**Endpoint:** `GET /bookings`
+
+**Authentication:** Required (Admin role)
+
+**Description:** Get all bookings across the platform with user details.
+
+**Headers:**
+```
+Authorization: Bearer {admin_jwt_token}
 ```
 
-#### Get Booking Statistics (Admin)
-```http
-GET /bookings/stats
-Authorization: Bearer {admin_jwt_token}
+**Response (200 OK):**
+```json
+[
+  {
+    "_id": "booking123",
+    "user": {
+      "_id": "507f...",
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "hotelName": "Luxury Grand Hotel",
+    "totalPrice": 75000,
+    "status": "confirmed",
+    "createdAt": "2024-12-01T10:30:00.000Z"
+  }
+]
+```
 
-Response: 200 OK
+---
+
+#### 13. Get Booking Statistics (Admin Only) 🔒
+**Endpoint:** `GET /bookings/stats`
+
+**Authentication:** Required (Admin role)
+
+**Description:** Get comprehensive booking analytics for admin dashboard.
+
+**Headers:**
+```
+Authorization: Bearer {admin_jwt_token}
+```
+
+**Response (200 OK):**
+```json
 {
   "totalBookings": 150,
   "totalRevenue": 2250000,
@@ -588,6 +792,11 @@ Response: 200 OK
     { "_id": "cancelled", "count": 30 }
   ],
   "monthlyBookings": [
+    {
+      "_id": { "year": 2024, "month": 11 },
+      "count": 35,
+      "revenue": 525000
+    },
     {
       "_id": { "year": 2024, "month": 12 },
       "count": 45,
@@ -599,116 +808,501 @@ Response: 200 OK
       "_id": "Luxury Grand Hotel",
       "bookings": 25,
       "revenue": 375000
+    },
+    {
+      "_id": "Beach Resort",
+      "bookings": 18,
+      "revenue": 270000
     }
   ],
-  "recentBookings": [...]
+  "recentBookings": [
+    {
+      "_id": "booking123",
+      "user": {...},
+      "hotelName": "Luxury Grand Hotel",
+      "totalPrice": 75000,
+      "createdAt": "2024-12-01T10:30:00.000Z"
+    }
+  ]
 }
 ```
 
-#### Cancel Booking
-```http
-PATCH /bookings/:id/cancel
-Authorization: Bearer {jwt_token}
+---
 
-Response: 200 OK
+#### 14. Cancel Booking 🔒
+**Endpoint:** `PATCH /bookings/:id/cancel`
+
+**Authentication:** Required (User must own the booking)
+
+**Description:** Cancel an existing booking.
+
+**Headers:**
+```
+Authorization: Bearer {jwt_token}
+```
+
+**Path Parameters:**
+- `id` - Booking ID
+
+**Response (200 OK):**
+```json
 {
   "message": "Booking cancelled successfully",
   "booking": {
     "_id": "booking123",
     "status": "cancelled",
-    ...
+    "hotelName": "Luxury Grand Hotel",
+    "totalPrice": 75000
+  }
+}
+```
+
+**Error Responses:**
+- `404` - Booking not found
+- `403` - Not authorized to cancel this booking
+- `400` - Booking is already cancelled
+
+---
+
+#### 15. Update Booking Status (Admin Only) 🔒
+**Endpoint:** `PATCH /bookings/:id/status`
+
+**Authentication:** Required (Admin role)
+
+**Description:** Update the status of any booking.
+
+**Headers:**
+```
+Authorization: Bearer {admin_jwt_token}
+```
+
+**Request Body:**
+```json
+{
+  "status": "completed"
+}
+```
+
+**Valid Statuses:** `pending`, `confirmed`, `cancelled`, `completed`
+
+**Response (200 OK):**
+```json
+{
+  "message": "Booking status updated successfully",
+  "booking": {
+    "_id": "booking123",
+    "status": "completed",
+    "user": {...}
+  }
+}
+```
+
+**Error Responses:**
+- `400` - Invalid status value
+- `404` - Booking not found
+
+---
+
+### 🛏️ Room Routes (`/api/rooms`)
+
+#### 16. Get All Rooms (Public)
+**Endpoint:** `GET /rooms`
+
+**Description:** Get all rooms with pagination and filtering.
+
+**Query Parameters:**
+- `page` (optional, default: 1) - Page number
+- `limit` (optional, default: 10) - Items per page
+- `sortBy` (optional, default: "createdAt") - Field to sort by
+- `order` (optional, default: "desc") - Sort order
+- `minPrice` (optional) - Minimum price filter
+- `maxPrice` (optional) - Maximum price filter
+- `type` (optional) - Room type filter
+- `hotelId` (optional) - Filter by hotel ID
+
+**Example:** `GET /rooms?page=1&limit=10&hotelId=6756ab...&minPrice=5000&maxPrice=20000`
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "_id": "room123",
+      "hotel": {
+        "_id": "6756ab...",
+        "name": "Luxury Grand Hotel",
+        "location": {...}
+      },
+      "name": "Deluxe Suite",
+      "description": "Spacious room with city view and premium amenities",
+      "price": 15000,
+      "capacity": 2,
+      "amenities": ["WiFi", "TV", "AC", "Mini Bar"],
+      "images": ["https://example.com/room1.jpg"],
+      "createdAt": "2024-11-20T08:15:00.000Z"
+    }
+  ],
+  "pagination": {
+    "total": 28,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 3
   }
 }
 ```
 
 ---
 
-### Room Endpoints
+#### 17. Get Room by ID (Public)
+**Endpoint:** `GET /rooms/:id`
 
-#### Get All Rooms
-```http
-GET /rooms?page=1&limit=10&hotelId=hotel123
+**Description:** Get detailed information about a specific room.
 
-Response: 200 OK
-{
-  "data": [
-    {
-      "_id": "room123",
-      "hotel": {...hotel details},
-      "name": "Deluxe Suite",
-      "description": "Spacious room with city view",
-      "price": 15000,
-      "capacity": 2,
-      "amenities": ["WiFi", "TV", "AC"],
-      "images": ["image_url"]
-    }
-  ],
-  "pagination": {...}
-}
-```
+**Path Parameters:**
+- `id` - Room ID
 
-#### Get Room by ID
-```http
-GET /rooms/:id
-
-Response: 200 OK
+**Response (200 OK):**
+```json
 {
   "_id": "room123",
-  "hotel": {...},
-  ...
+  "hotel": {
+    "_id": "6756ab...",
+    "name": "Luxury Grand Hotel",
+    "location": {...},
+    "rating": 4.8
+  },
+  "name": "Deluxe Suite",
+  "description": "Spacious room with city view",
+  "price": 15000,
+  "capacity": 2,
+  "amenities": ["WiFi", "TV", "AC"],
+  "images": ["url1", "url2"]
 }
 ```
 
-#### Create Room (Admin)
-```http
-POST /rooms
-Authorization: Bearer {admin_jwt_token}
-Content-Type: application/json
+**Error Responses:**
+- `404` - Room not found
 
+---
+
+#### 18. Create Room (Admin Only) 🔒
+**Endpoint:** `POST /rooms`
+
+**Authentication:** Required (Admin role)
+
+**Description:** Create a new room for a hotel.
+
+**Headers:**
+```
+Authorization: Bearer {admin_jwt_token}
+```
+
+**Request Body:**
+```json
 {
-  "hotel": "hotel123",
+  "hotel": "6756ab1234567890abcdef12",
   "name": "Presidential Suite",
-  "description": "Luxury suite with premium amenities",
+  "description": "Luxury suite with premium amenities and panoramic views",
   "price": 25000,
   "capacity": 4,
-  "amenities": ["WiFi", "Jacuzzi", "Butler Service"],
-  "images": ["image_url"]
+  "amenities": ["WiFi", "Jacuzzi", "Butler Service", "Ocean View"],
+  "images": ["https://example.com/suite1.jpg", "https://example.com/suite2.jpg"]
 }
-
-Response: 201 Created
 ```
 
-#### Update Room (Admin)
-```http
-PUT /rooms/:id
-Authorization: Bearer {admin_jwt_token}
-
-Response: 200 OK
-```
-
-#### Delete Room (Admin)
-```http
-DELETE /rooms/:id
-Authorization: Bearer {admin_jwt_token}
-
-Response: 200 OK
+**Response (201 Created):**
+```json
+{
+  "_id": "room125",
+  "hotel": {...},
+  "name": "Presidential Suite",
+  "price": 25000,
+  "capacity": 4,
+  "createdAt": "2024-12-08T01:35:00.000Z"
+}
 ```
 
 ---
 
-### Authentication & Authorization
+#### 19. Update Room (Admin Only) 🔒
+**Endpoint:** `PUT /rooms/:id`
 
-**All protected endpoints require:**
-```http
+**Authentication:** Required (Admin role)
+
+**Description:** Update an existing room's details.
+
+**Headers:**
+```
+Authorization: Bearer {admin_jwt_token}
+```
+
+**Request Body (partial update):**
+```json
+{
+  "price": 22000,
+  "amenities": ["WiFi", "Jacuzzi", "Butler Service", "Ocean View", "Smart TV"]
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "_id": "room125",
+  "hotel": {...},
+  "name": "Presidential Suite",
+  "price": 22000,
+  "updatedAt": "2024-12-08T01:40:00.000Z"
+}
+```
+
+**Error Responses:**
+- `404` - Room not found
+
+---
+
+#### 20. Delete Room (Admin Only) 🔒
+**Endpoint:** `DELETE /rooms/:id`
+
+**Authentication:** Required (Admin role)
+
+**Description:** Delete a room from the database.
+
+**Headers:**
+```
+Authorization: Bearer {admin_jwt_token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Room deleted successfully",
+  "room": {...}
+}
+```
+
+**Error Responses:**
+- `404` - Room not found
+
+---
+
+### 💳 Payment Routes (`/api/payments`)
+
+#### 21. Create Payment Intent 🔒
+**Endpoint:** `POST /payments/create-intent`
+
+**Authentication:** Required
+
+**Description:** Create a Razorpay order for payment processing.
+
+**Headers:**
+```
 Authorization: Bearer {jwt_token}
 ```
 
-**Admin-only endpoints additionally require:**
-- User role must be `admin`
-- Checked via `adminMiddleware`
+**Request Body:**
+```json
+{
+  "amount": 7500000,
+  "currency": "INR"
+}
+```
 
-**Token expiration:** 30 days  
-**Token storage:** Browser localStorage (client-side)
+**Note:** Amount is in paise (smallest currency unit). 7500000 paise = ₹75,000
+
+**Response (200 OK):**
+```json
+{
+  "id": "order_MNqwertyuiop123",
+  "currency": "INR",
+  "amount": 7500000
+}
+```
+
+**Error Responses:**
+- `500` - Razorpay error
+
+---
+
+#### 22. Verify Payment 🔒
+**Endpoint:** `POST /payments/verify`
+
+**Authentication:** Required
+
+**Description:** Verify Razorpay payment signature for security.
+
+**Headers:**
+```
+Authorization: Bearer {jwt_token}
+```
+
+**Request Body:**
+```json
+{
+  "razorpay_order_id": "order_MNqwertyuiop123",
+  "razorpay_payment_id": "pay_ABCxyz987654321",
+  "razorpay_signature": "generated_signature_hash"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Payment verified successfully"
+}
+```
+
+**Error Responses:**
+- `400` - Invalid signature sent
+- `500` - Internal server error
+
+---
+
+### 💰 Transaction Routes (`/api/transactions`)
+
+#### 23. Get User Transactions 🔒
+**Endpoint:** `GET /transactions`
+
+**Authentication:** Required
+
+**Description:** Get all transactions for the authenticated user.
+
+**Headers:**
+```
+Authorization: Bearer {jwt_token}
+```
+
+**Response (200 OK):**
+```json
+[
+  {
+    "_id": "trans123",
+    "user": "507f1f77bcf86cd799439011",
+    "booking": {
+      "_id": "booking123",
+      "hotelName": "Luxury Grand Hotel",
+      "totalPrice": 75000
+    },
+    "amount": 75000,
+    "type": "payment",
+    "status": "success",
+    "createdAt": "2024-12-01T10:35:00.000Z"
+  }
+]
+```
+
+---
+
+#### 24. Create Transaction 🔒
+**Endpoint:** `POST /transactions`
+
+**Authentication:** Required
+
+**Description:** Create a new transaction record.
+
+**Headers:**
+```
+Authorization: Bearer {jwt_token}
+```
+
+**Request Body:**
+```json
+{
+  "booking": "booking123",
+  "amount": 75000,
+  "type": "payment"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "_id": "trans124",
+  "user": "507f1f77bcf86cd799439011",
+  "booking": "booking123",
+  "amount": 75000,
+  "type": "payment",
+  "status": "success",
+  "createdAt": "2024-12-08T01:45:00.000Z"
+}
+```
+
+---
+
+### 🔒 Authentication & Authorization
+
+#### JWT Token Usage
+All protected endpoints require a JWT token in the Authorization header:
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+#### Token Information
+- **Expiration:** 1 hour (3600 seconds)
+- **Storage:** Browser localStorage (client-side)
+- **Payload:** Contains `userId` and `role`
+
+#### Role-Based Access Control
+
+**Public Routes (No authentication required):**
+- All `/auth/*` routes
+- `GET /hotels/search`
+- `GET /hotels/all`
+- `GET /hotels/:id`
+- `GET /rooms`
+- `GET /rooms/:id`
+
+**User Routes (Authentication required):**
+- `POST /bookings`
+- `GET /bookings/my-bookings`
+- `PATCH /bookings/:id/cancel`
+- `POST /payments/create-intent`
+- `POST /payments/verify`
+- `GET /transactions`
+- `POST /transactions`
+
+**Admin Routes (Admin role required):**
+- `POST /hotels`
+- `PUT /hotels/:id`
+- `DELETE /hotels/:id`
+- `GET /bookings`
+- `GET /bookings/stats`
+- `PATCH /bookings/:id/status`
+- `POST /rooms`
+- `PUT /rooms/:id`
+- `DELETE /rooms/:id`
+
+#### Error Responses for Authentication
+
+**401 Unauthorized:**
+```json
+{
+  "message": "No token provided" 
+}
+```
+
+**403 Forbidden:**
+```json
+{
+  "message": "Admin access required"
+}
+```
+
+---
+
+### 📊 API Summary
+
+| Route Module | Total Routes | Public | User Auth | Admin Only |
+|--------------|--------------|--------|-----------|------------|
+| Authentication | 3 | 3 | 0 | 0 |
+| Hotels | 6 | 3 | 0 | 3 |
+| Bookings | 6 | 0 | 3 | 3 |
+| Rooms | 5 | 2 | 0 | 3 |
+| Payments | 2 | 0 | 2 | 0 |
+| Transactions | 2 | 0 | 2 | 0 |
+| **Total** | **24** | **8** | **7** | **9** |
+
+**Note:** Some routes serve dual purposes (e.g., bookings can be accessed by both users and admins with different permissions)
 
 ---
 
