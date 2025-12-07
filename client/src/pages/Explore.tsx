@@ -23,7 +23,7 @@ interface Hotel {
 }
 
 const Explore: React.FC = () => {
-    const [hotels, setHotels] = useState<any[]>([]);
+    const [hotels, setHotels] = useState<Hotel[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -106,7 +106,6 @@ const Explore: React.FC = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* Filters and Search */}
-                {/* Filters and Search */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
                     <div className="relative w-full md:w-96">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -136,112 +135,113 @@ const Explore: React.FC = () => {
                             <option value="Chennai">Chennai</option>
                         </select>
                     </div>
-
-                    {/* Hotels Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {currentHotels.map((hotel) => (
-                            <motion.div
-                                key={hotel.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                whileHover={{ y: -10 }}
-                                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
-                            >
-                                <div className="relative">
-                                    <img
-                                        src={hotel.images?.[0] || 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
-                                        alt={hotel.name}
-                                        className="w-full h-48 object-cover"
-                                    />
-                                    <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full shadow-md">
-                                        <span className="text-yellow-500 font-bold">⭐ {hotel.rating || 4.5}</span>
-                                    </div>
-                                </div>
-                                <div className="p-6">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{hotel.name}</h3>
-                                    <p className="text-gray-600 text-sm mb-4">
-                                        {hotel.location?.address || 'Location not available'}
-                                    </p>
-                                    <div className="flex justify-between items-center">
-                                        <div>
-                                            <p className="text-sm text-gray-500">From</p>
-                                            <p className="text-2xl font-bold text-blue-600">₹{hotel.price}</p>
-                                            <p className="text-xs text-gray-400">per night</p>
-                                        </div>
-                                        <Link to={`/hotels/${hotel.id}`}>
-                                            <Button>View Details</Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                        <div className="mt-12 flex justify-center items-center space-x-2">
-                            <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === 1
-                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                                    }`}
-                            >
-                                Previous
-                            </button>
-
-                            <div className="flex space-x-1">
-                                {[...Array(totalPages)].map((_, index) => {
-                                    const pageNumber = index + 1;
-                                    // Show first page, last page, current page, and pages around current
-                                    if (
-                                        pageNumber === 1 ||
-                                        pageNumber === totalPages ||
-                                        (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
-                                    ) {
-                                        return (
-                                            <button
-                                                key={pageNumber}
-                                                onClick={() => handlePageChange(pageNumber)}
-                                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === pageNumber
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                    }`}
-                                            >
-                                                {pageNumber}
-                                            </button>
-                                        );
-                                    } else if (
-                                        pageNumber === currentPage - 2 ||
-                                        pageNumber === currentPage + 2
-                                    ) {
-                                        return <span key={pageNumber} className="px-2 py-2 text-gray-400">...</span>;
-                                    }
-                                    return null;
-                                })}
-                            </div>
-
-                            <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === totalPages
-                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                                    }`}
-                            >
-                                Next
-                            </button>
-                        </div>
-                    )}
-
-                    {/* No Results Message */}
-                    {currentHotels.length === 0 && !loading && (
-                        <div className="text-center py-20">
-                            <p className="text-gray-500 text-lg">No hotels found matching your search.</p>
-                        </div>
-                    )}
                 </div>
+
+                {/* Hotels Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {currentHotels.map((hotel) => (
+                        <motion.div
+                            key={hotel.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ y: -10 }}
+                            className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
+                        >
+                            <div className="relative">
+                                <img
+                                    src={hotel.images?.[0] || 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
+                                    alt={hotel.name}
+                                    className="w-full h-48 object-cover"
+                                />
+                                <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full shadow-md">
+                                    <span className="text-yellow-500 font-bold">⭐ {hotel.rating || 4.5}</span>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{hotel.name}</h3>
+                                <p className="text-gray-600 text-sm mb-4">
+                                    {hotel.location?.address || 'Location not available'}
+                                </p>
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-sm text-gray-500">From</p>
+                                        <p className="text-2xl font-bold text-blue-600">₹{hotel.price}</p>
+                                        <p className="text-xs text-gray-400">per night</p>
+                                    </div>
+                                    <Link to={`/hotels/${hotel.id}`}>
+                                        <Button>View Details</Button>
+                                    </Link>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="mt-12 flex justify-center items-center space-x-2">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === 1
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
+                        >
+                            Previous
+                        </button>
+
+                        <div className="flex space-x-1">
+                            {[...Array(totalPages)].map((_, index) => {
+                                const pageNumber = index + 1;
+                                // Show first page, last page, current page, and pages around current
+                                if (
+                                    pageNumber === 1 ||
+                                    pageNumber === totalPages ||
+                                    (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                                ) {
+                                    return (
+                                        <button
+                                            key={pageNumber}
+                                            onClick={() => handlePageChange(pageNumber)}
+                                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === pageNumber
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                }`}
+                                        >
+                                            {pageNumber}
+                                        </button>
+                                    );
+                                } else if (
+                                    pageNumber === currentPage - 2 ||
+                                    pageNumber === currentPage + 2
+                                ) {
+                                    return <span key={pageNumber} className="px-2 py-2 text-gray-400">...</span>;
+                                }
+                                return null;
+                            })}
+                        </div>
+
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${currentPage === totalPages
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
+
+                {/* No Results Message */}
+                {currentHotels.length === 0 && !loading && (
+                    <div className="text-center py-20">
+                        <p className="text-gray-500 text-lg">No hotels found matching your search.</p>
+                    </div>
+                )}
+            </div>
         </MainLayout>
     );
 };
