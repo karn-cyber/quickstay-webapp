@@ -4,6 +4,7 @@ import { Star, Wifi, Coffee, Tv, Users, Check, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MainLayout from '../layouts/MainLayout';
 import Button from '../components/ui/Button';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -26,6 +27,39 @@ const RoomDetails: React.FC = () => {
     const [checkIn, setCheckIn] = useState('');
     const [checkOut, setCheckOut] = useState('');
     const [bookingLoading, setBookingLoading] = useState(false);
+
+    const [dialog, setDialog] = useState({
+        isOpen: false,
+        type: 'info' as 'danger' | 'success' | 'info' | 'warning',
+        title: '',
+        message: '',
+        onConfirm: () => { },
+        confirmText: 'OK',
+        cancelText: null as string | null
+    });
+
+    const closeDialog = () => {
+        setDialog(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const showDialog = (
+        type: 'danger' | 'success' | 'info' | 'warning',
+        title: string,
+        message: string,
+        onConfirm: () => void = closeDialog,
+        confirmText = 'OK',
+        cancelText: string | null = null
+    ) => {
+        setDialog({
+            isOpen: true,
+            type,
+            title,
+            message,
+            onConfirm,
+            confirmText,
+            cancelText
+        });
+    };
 
     useEffect(() => {
         const fetchRoom = async () => {
@@ -51,7 +85,7 @@ const RoomDetails: React.FC = () => {
         }
 
         if (!checkIn || !checkOut) {
-            alert('Please select check-in and check-out dates');
+            showDialog('warning', 'Missing Dates', 'Please select check-in and check-out dates', closeDialog, 'OK');
             return;
         }
 
@@ -70,7 +104,7 @@ const RoomDetails: React.FC = () => {
             navigate('/dashboard');
         } catch (error) {
             console.error('Error creating booking:', error);
-            alert('Failed to create booking');
+            showDialog('danger', 'Booking Failed', 'Failed to create booking', closeDialog, 'Close');
         } finally {
             setBookingLoading(false);
         }
@@ -257,7 +291,18 @@ const RoomDetails: React.FC = () => {
                     </motion.div>
                 </div>
             </div >
-        </MainLayout >
+
+            <ConfirmDialog
+                isOpen={dialog.isOpen}
+                onClose={closeDialog}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+                confirmText={dialog.confirmText}
+                cancelText={dialog.cancelText}
+            />
+        </MainLayout>
     );
 };
 

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Upload, Loader2 } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import Button from '../components/ui/Button';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import api from '../lib/api';
 
 const AdminHotelEdit: React.FC = () => {
@@ -22,6 +23,39 @@ const AdminHotelEdit: React.FC = () => {
         images: [''],
         amenities: [] as string[]
     });
+
+    const [dialog, setDialog] = useState({
+        isOpen: false,
+        type: 'info' as 'danger' | 'success' | 'info' | 'warning',
+        title: '',
+        message: '',
+        onConfirm: () => { },
+        confirmText: 'OK',
+        cancelText: null as string | null
+    });
+
+    const closeDialog = () => {
+        setDialog(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const showDialog = (
+        type: 'danger' | 'success' | 'info' | 'warning',
+        title: string,
+        message: string,
+        onConfirm: () => void = closeDialog,
+        confirmText = 'OK',
+        cancelText: string | null = null
+    ) => {
+        setDialog({
+            isOpen: true,
+            type,
+            title,
+            message,
+            onConfirm,
+            confirmText,
+            cancelText
+        });
+    };
 
     useEffect(() => {
         fetchHotel();
@@ -46,8 +80,16 @@ const AdminHotelEdit: React.FC = () => {
             });
         } catch (error) {
             console.error('Error fetching hotel:', error);
-            alert('Failed to load hotel details');
-            navigate('/admin/hotels');
+            showDialog(
+                'danger',
+                'Error',
+                'Failed to load hotel details',
+                () => {
+                    closeDialog();
+                    navigate('/admin/hotels');
+                },
+                'Close'
+            );
         } finally {
             setLoading(false);
         }
@@ -73,11 +115,25 @@ const AdminHotelEdit: React.FC = () => {
             };
 
             await api.put(`/hotels/${id}`, hotelData);
-            alert('Hotel updated successfully!');
-            navigate('/admin/hotels');
+            showDialog(
+                'success',
+                'Success',
+                'Hotel updated successfully!',
+                () => {
+                    closeDialog();
+                    navigate('/admin/hotels');
+                },
+                'Close'
+            );
         } catch (error: any) {
             console.error('Error updating hotel:', error);
-            alert(error.response?.data?.message || 'Failed to update hotel');
+            showDialog(
+                'danger',
+                'Error',
+                error.response?.data?.message || 'Failed to update hotel',
+                closeDialog,
+                'Close'
+            );
         } finally {
             setSaving(false);
         }
@@ -279,8 +335,8 @@ const AdminHotelEdit: React.FC = () => {
                                         type="button"
                                         onClick={() => toggleAmenity(amenity)}
                                         className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${formData.amenities.includes(amenity)
-                                                ? 'bg-blue-600 border-blue-600 text-white'
-                                                : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
+                                            ? 'bg-blue-600 border-blue-600 text-white'
+                                            : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
                                             }`}
                                     >
                                         {amenity}
@@ -312,6 +368,17 @@ const AdminHotelEdit: React.FC = () => {
                     </form>
                 </motion.div>
             </div>
+
+            <ConfirmDialog
+                isOpen={dialog.isOpen}
+                onClose={closeDialog}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+                confirmText={dialog.confirmText}
+                cancelText={dialog.cancelText}
+            />
         </MainLayout>
     );
 };

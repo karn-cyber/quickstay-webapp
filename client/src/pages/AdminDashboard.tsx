@@ -45,18 +45,29 @@ const AdminDashboard: React.FC = () => {
         );
     }
 
+    if (!stats) {
+        return (
+            <MainLayout>
+                <div className="flex flex-col justify-center items-center h-screen">
+                    <div className="text-red-500 text-xl font-bold mb-4">Failed to load dashboard data</div>
+                    <Button onClick={() => window.location.reload()}>Retry</Button>
+                </div>
+            </MainLayout>
+        );
+    }
+
     // Format monthly data for charts
-    const monthlyData = stats?.monthlyBookings.map(item => ({
+    const monthlyData = (stats?.monthlyBookings || []).map(item => ({
         name: `${item._id.month}/${item._id.year}`,
         bookings: item.count,
         revenue: item.revenue / 1000 // Convert to thousands
-    })) || [];
+    }));
 
     // Status distribution for pie chart
-    const statusData = stats?.bookingsByStatus.map(item => ({
+    const statusData = (stats?.bookingsByStatus || []).map(item => ({
         name: item._id,
         value: item.count
-    })) || [];
+    }));
 
     const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
 

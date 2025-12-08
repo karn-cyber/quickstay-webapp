@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, Loader2, Calendar, DollarSign, Filter, Download } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import Button from '../components/ui/Button';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import api from '../lib/api';
 
 interface Booking {
@@ -28,6 +29,39 @@ const AdminBookingManagement: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
+
+    const [dialog, setDialog] = useState({
+        isOpen: false,
+        type: 'info' as 'danger' | 'success' | 'info' | 'warning',
+        title: '',
+        message: '',
+        onConfirm: () => { },
+        confirmText: 'OK',
+        cancelText: null as string | null
+    });
+
+    const closeDialog = () => {
+        setDialog(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const showDialog = (
+        type: 'danger' | 'success' | 'info' | 'warning',
+        title: string,
+        message: string,
+        onConfirm: () => void = closeDialog,
+        confirmText = 'OK',
+        cancelText: string | null = null
+    ) => {
+        setDialog({
+            isOpen: true,
+            type,
+            title,
+            message,
+            onConfirm,
+            confirmText,
+            cancelText
+        });
+    };
 
     useEffect(() => {
         fetchBookings();
@@ -74,10 +108,24 @@ const AdminBookingManagement: React.FC = () => {
     const updateBookingStatus = async (bookingId: string, newStatus: string) => {
         try {
             await api.patch(`/bookings/${bookingId}/status`, { status: newStatus });
-            alert('Booking status updated successfully!');
-            fetchBookings();
+            showDialog(
+                'success',
+                'Success',
+                'Booking status updated successfully!',
+                () => {
+                    closeDialog();
+                    fetchBookings();
+                },
+                'Close'
+            );
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Failed to update booking status');
+            showDialog(
+                'danger',
+                'Error',
+                error.response?.data?.message || 'Failed to update booking status',
+                closeDialog,
+                'Close'
+            );
         }
     };
 
@@ -366,6 +414,17 @@ const AdminBookingManagement: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <ConfirmDialog
+                isOpen={dialog.isOpen}
+                onClose={closeDialog}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+                confirmText={dialog.confirmText}
+                cancelText={dialog.cancelText}
+            />
         </MainLayout>
     );
 };

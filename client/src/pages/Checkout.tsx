@@ -4,12 +4,47 @@ import MainLayout from '../layouts/MainLayout';
 import Button from '../components/ui/Button';
 import api from '../lib/api';
 
+import ConfirmDialog from '../components/ui/ConfirmDialog';
+
 const Checkout: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { hotel, addons } = location.state || {};
     const [loading, setLoading] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+    const [dialog, setDialog] = useState({
+        isOpen: false,
+        type: 'info' as 'danger' | 'success' | 'info' | 'warning',
+        title: '',
+        message: '' as React.ReactNode,
+        onConfirm: () => { },
+        confirmText: 'OK',
+        cancelText: null as string | null
+    });
+
+    const closeDialog = () => {
+        setDialog(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const showDialog = (
+        type: 'danger' | 'success' | 'info' | 'warning',
+        title: string,
+        message: React.ReactNode,
+        onConfirm: () => void = closeDialog,
+        confirmText = 'OK',
+        cancelText: string | null = null
+    ) => {
+        setDialog({
+            isOpen: true,
+            type,
+            title,
+            message,
+            onConfirm,
+            confirmText,
+            cancelText
+        });
+    };
 
     // Calculate total price
     const basePrice = hotel?.price || 0;
@@ -48,14 +83,20 @@ const Checkout: React.FC = () => {
 
             console.log('Booking successful:', response.data);
 
-            alert(
-                `🎉 Payment Successful!\n\n` +
-                `Your booking has been confirmed.\n` +
-                `Booking ID: #${response.data._id?.slice(-6) || 'CONFIRMED'}\n\n` +
-                `Redirecting to your dashboard...`
+            showDialog(
+                'success',
+                'Payment Successful!',
+                <div className="text-left">
+                    <p className="mb-2">Your booking has been confirmed.</p>
+                    <p className="font-mono bg-gray-100 p-2 rounded mb-2">Booking ID: #{response.data._id?.slice(-6) || 'CONFIRMED'}</p>
+                    <p className="text-sm text-gray-500">Redirecting to your dashboard...</p>
+                </div>,
+                () => {
+                    closeDialog();
+                    navigate('/dashboard');
+                },
+                'Go to Dashboard'
             );
-
-            navigate('/dashboard');
         } catch (error: any) {
             console.error('Booking failed:', error);
 
@@ -63,14 +104,28 @@ const Checkout: React.FC = () => {
 
             if (error.response?.status === 401) {
                 errorMsg = 'Please login to make a booking.';
-                alert(`❌ Booking Failed\n\n${errorMsg}`);
-                setTimeout(() => navigate('/login'), 2000);
+                showDialog(
+                    'danger',
+                    'Booking Failed',
+                    errorMsg,
+                    () => {
+                        closeDialog();
+                        navigate('/login');
+                    },
+                    'Login'
+                );
                 return;
             } else if (error.response?.data?.message) {
                 errorMsg = error.response.data.message;
             }
 
-            alert(`❌ Booking Failed\n\n${errorMsg}`);
+            showDialog(
+                'danger',
+                'Booking Failed',
+                errorMsg,
+                closeDialog,
+                'Close'
+            );
             setLoading(false);
         }
     };
@@ -194,6 +249,17 @@ const Checkout: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={dialog.isOpen}
+                onClose={closeDialog}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+                confirmText={dialog.confirmText}
+                cancelText={dialog.cancelText}
+            />
         </MainLayout>
     );
 };

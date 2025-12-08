@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, User, CreditCard, Package, ChevronDown, ChevronUp, XCircle } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import api from '../lib/api';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 
 interface Booking {
     _id: string;
@@ -53,14 +54,54 @@ const Dashboard: React.FC = () => {
         setExpandedBooking(expandedBooking === bookingId ? null : bookingId);
     };
 
-    const handleCancelBooking = async (bookingId: string, hotelName: string) => {
-        const confirmed = window.confirm(
-            `Are you sure you want to cancel your booking at ${hotelName}?\n\nThis action cannot be undone.`
+    const [dialog, setDialog] = useState({
+        isOpen: false,
+        type: 'info' as 'danger' | 'success' | 'info' | 'warning',
+        title: '',
+        message: '',
+        onConfirm: () => { },
+        confirmText: 'OK',
+        cancelText: null as string | null
+    });
+
+    const closeDialog = () => {
+        setDialog(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const showDialog = (
+        type: 'danger' | 'success' | 'info' | 'warning',
+        title: string,
+        message: string,
+        onConfirm: () => void = closeDialog,
+        confirmText = 'OK',
+        cancelText: string | null = null
+    ) => {
+        setDialog({
+            isOpen: true,
+            type,
+            title,
+            message,
+            onConfirm,
+            confirmText,
+            cancelText
+        });
+    };
+
+    const handleCancelBooking = (bookingId: string, hotelName: string) => {
+        showDialog(
+            'danger',
+            'Cancel Booking',
+            `Are you sure you want to cancel your booking at ${hotelName}?\n\nThis action cannot be undone.`,
+            () => processCancellation(bookingId),
+            'Yes, Cancel Booking',
+            'Keep Booking'
         );
+    };
 
-        if (!confirmed) return;
-
+    const processCancellation = async (bookingId: string) => {
         try {
+            closeDialog(); // Close confirmation dialog
+
             await api.patch(`/bookings/${bookingId}/cancel`);
 
             // Update the booking status in the UI
@@ -70,10 +111,22 @@ const Dashboard: React.FC = () => {
                     : booking
             ));
 
-            alert('✅ Booking cancelled successfully');
+            showDialog(
+                'success',
+                'Booking Cancelled',
+                'Your booking has been cancelled successfully.',
+                closeDialog,
+                'Close'
+            );
         } catch (error: any) {
             console.error('Error cancelling booking:', error);
-            alert(error.response?.data?.message || 'Failed to cancel booking. Please try again.');
+            showDialog(
+                'danger',
+                'Cancellation Failed',
+                error.response?.data?.message || 'Failed to cancel booking. Please try again.',
+                closeDialog,
+                'Close'
+            );
         }
     };
 
@@ -314,6 +367,17 @@ const Dashboard: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={dialog.isOpen}
+                onClose={closeDialog}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+                confirmText={dialog.confirmText}
+                cancelText={dialog.cancelText}
+            />
         </MainLayout>
     );
 };

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Upload } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import Button from '../components/ui/Button';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import api from '../lib/api';
 
 const AdminHotelCreate: React.FC = () => {
@@ -20,6 +21,39 @@ const AdminHotelCreate: React.FC = () => {
         images: [''],
         amenities: ['WiFi', 'Pool']
     });
+
+    const [dialog, setDialog] = useState({
+        isOpen: false,
+        type: 'info' as 'danger' | 'success' | 'info' | 'warning',
+        title: '',
+        message: '',
+        onConfirm: () => { },
+        confirmText: 'OK',
+        cancelText: null as string | null
+    });
+
+    const closeDialog = () => {
+        setDialog(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const showDialog = (
+        type: 'danger' | 'success' | 'info' | 'warning',
+        title: string,
+        message: string,
+        onConfirm: () => void = closeDialog,
+        confirmText = 'OK',
+        cancelText: string | null = null
+    ) => {
+        setDialog({
+            isOpen: true,
+            type,
+            title,
+            message,
+            onConfirm,
+            confirmText,
+            cancelText
+        });
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,11 +75,25 @@ const AdminHotelCreate: React.FC = () => {
             };
 
             await api.post('/hotels', hotelData);
-            alert('Hotel created successfully!');
-            navigate('/admin/hotels');
+            showDialog(
+                'success',
+                'Success',
+                'Hotel created successfully!',
+                () => {
+                    closeDialog();
+                    navigate('/admin/hotels');
+                },
+                'Close'
+            );
         } catch (error: any) {
             console.error('Error creating hotel:', error);
-            alert(error.response?.data?.message || 'Failed to create hotel');
+            showDialog(
+                'danger',
+                'Error',
+                error.response?.data?.message || 'Failed to create hotel',
+                closeDialog,
+                'Close'
+            );
         } finally {
             setLoading(false);
         }
@@ -228,8 +276,8 @@ const AdminHotelCreate: React.FC = () => {
                                         type="button"
                                         onClick={() => toggleAmenity(amenity)}
                                         className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${formData.amenities.includes(amenity)
-                                                ? 'bg-blue-600 border-blue-600 text-white'
-                                                : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
+                                            ? 'bg-blue-600 border-blue-600 text-white'
+                                            : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
                                             }`}
                                     >
                                         {amenity}
@@ -261,6 +309,17 @@ const AdminHotelCreate: React.FC = () => {
                     </form>
                 </motion.div>
             </div>
+
+            <ConfirmDialog
+                isOpen={dialog.isOpen}
+                onClose={closeDialog}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+                confirmText={dialog.confirmText}
+                cancelText={dialog.cancelText}
+            />
         </MainLayout>
     );
 };

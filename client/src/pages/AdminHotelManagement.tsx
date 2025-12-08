@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Plus, Edit, Trash2, Search, Loader2 } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import Button from '../components/ui/Button';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import api from '../lib/api';
 
 interface Hotel {
@@ -61,15 +62,72 @@ const AdminHotelManagement: React.FC = () => {
         fetchHotels();
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this hotel?')) return;
+    const [dialog, setDialog] = useState({
+        isOpen: false,
+        type: 'info' as 'danger' | 'success' | 'info' | 'warning',
+        title: '',
+        message: '',
+        onConfirm: () => { },
+        confirmText: 'OK',
+        cancelText: null as string | null
+    });
 
+    const closeDialog = () => {
+        setDialog(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const showDialog = (
+        type: 'danger' | 'success' | 'info' | 'warning',
+        title: string,
+        message: string,
+        onConfirm: () => void = closeDialog,
+        confirmText = 'OK',
+        cancelText: string | null = null
+    ) => {
+        setDialog({
+            isOpen: true,
+            type,
+            title,
+            message,
+            onConfirm,
+            confirmText,
+            cancelText
+        });
+    };
+
+    const handleDelete = (id: string) => {
+        showDialog(
+            'danger',
+            'Delete Hotel',
+            'Are you sure you want to delete this hotel? This action cannot be undone.',
+            () => processDelete(id),
+            'Delete',
+            'Cancel'
+        );
+    };
+
+    const processDelete = async (id: string) => {
         try {
+            closeDialog();
             await api.delete(`/hotels/${id}`);
-            alert('Hotel deleted successfully!');
-            fetchHotels();
+            showDialog(
+                'success',
+                'Success',
+                'Hotel deleted successfully!',
+                () => {
+                    closeDialog();
+                    fetchHotels();
+                },
+                'Close'
+            );
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Failed to delete hotel');
+            showDialog(
+                'danger',
+                'Error',
+                error.response?.data?.message || 'Failed to delete hotel',
+                closeDialog,
+                'Close'
+            );
         }
     };
 
@@ -222,6 +280,17 @@ const AdminHotelManagement: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <ConfirmDialog
+                isOpen={dialog.isOpen}
+                onClose={closeDialog}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+                confirmText={dialog.confirmText}
+                cancelText={dialog.cancelText}
+            />
         </MainLayout>
     );
 };
