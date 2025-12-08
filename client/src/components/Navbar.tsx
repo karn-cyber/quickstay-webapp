@@ -27,8 +27,8 @@ const Navbar: React.FC = () => {
     return (
         <nav
             className={`fixed w-full z-50 transition-all duration-500 ${isScrolled
-                    ? 'bg-gradient-to-r from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-xl shadow-2xl border-b border-white/10'
-                    : 'bg-gradient-to-r from-black via-gray-900 to-black'
+                ? 'bg-gradient-to-r from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-xl shadow-2xl border-b border-white/10'
+                : 'bg-gradient-to-r from-black via-gray-900 to-black'
                 }`}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,7 +39,7 @@ const Navbar: React.FC = () => {
                             {/* Logo background glow */}
                             <div className="absolute inset-0 bg-blue-500/20 rounded-lg blur-xl group-hover:bg-blue-500/30 transition-all duration-300"></div>
                             <span className="relative text-2xl font-bold bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">
-                                Quick<span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text">Stay</span>
+                                Luxury<span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text">Stay</span>
                             </span>
                         </div>
                         {/* Premium badge */}

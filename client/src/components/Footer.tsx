@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                     <div className="col-span-1 md:col-span-1">
                         <Link to="/" className="text-2xl font-bold mb-4 block">
-                            Quick<span className="text-blue-500">Stay</span>
+                            Luxury<span className="text-blue-500">Stay</span>
                         </Link>
                         <p className="text-gray-400 text-sm leading-relaxed">
                             Experience luxury and comfort in the heart of the city. Book your perfect stay with us today.
@@ -55,7 +55,7 @@ const Footer: React.FC = () => {
                 </div>
 
                 <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-                    <p>&copy; {new Date().getFullYear()} QuickStay. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} LuxuryStay. All rights reserved.</p>
                 </div>
             </div>
         </footer>

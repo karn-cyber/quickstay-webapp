@@ -40,8 +40,8 @@ const ContactUs: React.FC = () => {
         {
             icon: Mail,
             title: 'Email Us',
-            content: 'support@quickstay.com',
-            link: 'mailto:support@quickstay.com'
+            content: 'support@luxurystay.com',
+            link: 'mailto:support@luxurystay.com'
         },
         {
             icon: Phone,

@@ -1,4 +1,4 @@
-# 🏨 Quick Stay - Hotel Booking Platform
+# 🏨 Luxury Stay - Hotel Booking Platform
 
 Hosted Frontend Link : (https://quickstay-webapp-2v7o.vercel.app)
 
@@ -6,7 +6,7 @@ Hosted Frontend Link : (https://quickstay-webapp-2v7o.vercel.app)
 
 A comprehensive MERN stack hotel booking application featuring Google OAuth authentication, real-time booking management, interactive analytics dashboard, and seamless payment integration. Built as an academic capstone project demonstrating modern web development practices.
 
-![Quick Stay](https://img.shields.io/badge/Quick%20Stay-Hotel%20Booking-blue)
+![Luxury Stay](https://img.shields.io/badge/Quick%20Stay-Hotel%20Booking-blue)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Database-green)
 ![React](https://img.shields.io/badge/React-Frontend-61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-Backend-339933)
@@ -18,7 +18,7 @@ A comprehensive MERN stack hotel booking application featuring Google OAuth auth
 
 ## 🎯 Project Purpose
 
-**Quick Stay** is a comprehensive hotel booking platform developed as an **Academic Capstone Project** to demonstrate:
+**Luxury Stay** is a comprehensive hotel booking platform developed as an **Academic Capstone Project** to demonstrate:
 
 - **Full-Stack Development** - Complete MERN stack implementation
 - **Modern Architecture** - RESTful API, JWT authentication, role-based access
