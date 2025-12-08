@@ -1,5 +1,7 @@
 # 🏨 Quick Stay - Hotel Booking Platform
 
+Hosted Frontend Link : (https://quickstay-webapp-2v7o.vercel.app)
+
 > **A Modern Full-Stack Hotel Booking System | Academic Project**
 
 A comprehensive MERN stack hotel booking application featuring Google OAuth authentication, real-time booking management, interactive analytics dashboard, and seamless payment integration. Built as an academic capstone project demonstrating modern web development practices.
